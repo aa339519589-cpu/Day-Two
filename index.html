@@ -1,58 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Day Two</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: #0f172a;
-      color: #f8fafc;
-    }
-    .card {
-      background: #1e293b;
-      padding: 2.5rem 3rem;
-      border-radius: 1rem;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-      text-align: center;
-      max-width: 480px;
-      border: 1px solid #334155;
-    }
-    h1 {
-      margin-top: 0;
-      font-size: 2.25rem;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    p {
-      color: #94a3b8;
-      line-height: 1.6;
-    }
-    .badge {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      background: #0369a1;
-      color: #e0f2fe;
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Day Two</h1>
-    <p>仓库已就绪，正在准备构建网页内容与部署至 Render。</p>
-    <div class="badge">🚀 Ready for Development</div>
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f3efe8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#100f0d" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Day Two" />
+    <meta name="description" content="不卖社交，卖深度沟通。只留三个席位，给已经愿意继续的人。" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,620&family=Outfit:wght@340;460;530&display=swap" rel="stylesheet" />
+    <title>Day Two</title>
+    <script>
+      try {
+        var t = localStorage.getItem('daytwo-theme')
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

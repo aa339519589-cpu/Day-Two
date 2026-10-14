@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: day-two
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
