@@ -5,12 +5,23 @@ import { formatWhen } from '../logic'
 import { LockScroll, Photo, useTitle } from '../ui'
 import { BackButton, Icon, PersonAvatar, Sheet } from './Elements'
 
+const REEL_KEY = 'daytwo-reel-position-v1'
+function savedReel(): {filter: string; id: string} | null {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(REEL_KEY) || 'null')
+    return typeof value?.filter === 'string' && typeof value?.id === 'string' ? value : null
+  } catch { return null }
+}
+function saveReel(filter: string, id: string) {
+  try { sessionStorage.setItem(REEL_KEY, JSON.stringify({filter, id})) } catch { /* Private browsing may disable session storage. */ }
+}
+
 export function PhotoStream({ personId, inShell = false }: { personId?: string; inShell?: boolean }) {
   const { data, removeMoment, showToast } = useStore()
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const focus = params.get('m')
-  const [filter, setFilter] = useState('all')
+  const [filter, setFilter] = useState(() => inShell ? savedReel()?.filter || 'all' : 'all')
   const [index, setIndex] = useState(0)
   const [clean, setClean] = useState(false)
   const [full, setFull] = useState(false)
@@ -23,6 +34,9 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
   const friends = useMemo(() => data.people.filter(p => data.relations.some(r => r.personId === p.id && r.status === 'active')), [data.people, data.relations])
   const blocked = !!personId && personId !== 'me' && !friends.some(p => p.id === personId)
   const chosen = personId || filter
+  useEffect(() => {
+    if (inShell && filter !== 'all' && filter !== 'me' && !friends.some(p => p.id === filter)) setFilter('all')
+  }, [inShell, filter, friends])
   const list = useMemo(() => data.moments.filter(m =>
     !blocked && (m.authorId === 'me' || friends.some(p => p.id === m.authorId)) && (chosen === 'all' || m.authorId === chosen)
   ).sort((a,b) => b.createdAt.localeCompare(a.createdAt)), [data.moments, friends, chosen, blocked])
@@ -37,11 +51,14 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
 
   useLayoutEffect(() => {
     const node = rail.current
-    const found = focus ? list.findIndex(m => m.id === focus) : -1
+    const last = inShell && !focus ? savedReel() : null
+    const target = focus || (last?.filter === chosen ? last.id : null)
+    const found = target ? list.findIndex(m => m.id === target) : -1
     const next = found < 0 ? 0 : found
     position.current = next
     setIndex(next)
     if (node) node.scrollTop = next * node.clientHeight
+    if (inShell && list[next]) saveReel(chosen, list[next].id)
     setFull(false)
     // The list is represented by IDs so unrelated chat/profile changes do not reset a photo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,6 +80,7 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
         const next = Math.max(0, Math.min(count.current - 1, Math.round(node.scrollTop / Math.max(1, node.clientHeight))))
         position.current = next
         setIndex(next)
+        if (inShell && list[next]) saveReel(chosen, list[next].id)
       })
     }
     const go = (dir: number) => {
@@ -94,7 +112,7 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
     node.addEventListener('wheel', onWheel, {passive:false})
     window.addEventListener('keydown', onKey)
     return () => {observer.disconnect();cancelAnimationFrame(frame);clearTimeout(wheelTimer);node.removeEventListener('scroll',sync);node.removeEventListener('wheel',onWheel);window.removeEventListener('keydown',onKey)}
-  }, [blocked, list.length > 0])
+  }, [chosen, ids, inShell])
   useEffect(() => {
     const viewport = window.visualViewport
     const node = stage.current
@@ -109,7 +127,7 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
   return <section className={`photo-stage${inShell ? ' in-shell' : ' standalone'}${clean ? ' chrome-hidden' : ''}${full ? ' show-full' : ''}`} ref={stage} data-current-id={current?.id}>
     <LockScroll/>
     {list.length > 0 ? <div ref={rail} className="photo-rail" tabIndex={0} aria-label="日常照片" onPointerDown={e => {pointer.current={x:e.clientX,y:e.clientY,moved:false}}} onPointerMove={e => {if (Math.abs(e.clientY-pointer.current.y)>8 || Math.abs(e.clientX-pointer.current.x)>8) pointer.current.moved=true}} onClick={() => {if (!pointer.current.moved) setClean(v => !v)}}>
-      {list.map((moment, i) => <article key={moment.id} className="photo-slide" aria-hidden={i !== safe}><Photo image={moment.image} alt={i === safe ? moment.caption || '日常照片' : ''}/></article>)}
+      {list.map((moment, i) => <article key={moment.id} className="photo-slide" aria-hidden={i !== safe}>{Math.abs(i - safe) <= 1 && <Photo image={moment.image} alt={i === safe ? moment.caption || '日常照片' : ''}/>}</article>)}
     </div> : <div className="photo-empty"><Icon name="photo" size={40}/><h2>{blocked ? '还不是好友' : '还没有照片'}</h2><button type="button" className="small-button" onClick={() => navigate(blocked ? `/friend/${personId}` : '/compose')}>{blocked ? '查看资料' : '分享照片'}</button></div>}
     <header className="photo-top photo-chrome">
       {inShell ? <div className="photo-filters" aria-label="按好友筛选"><button type="button" className={filter === 'all' ? 'selected' : ''} aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>全部</button>{friends.map(p => <button type="button" key={p.id} className={filter === p.id ? 'selected' : ''} aria-pressed={filter === p.id} onClick={() => setFilter(p.id)}>{p.name}</button>)}<button type="button" className={filter === 'me' ? 'selected' : ''} aria-pressed={filter === 'me'} onClick={() => setFilter('me')}>我</button></div> : <><BackButton to="/daily"/><span className="photo-page-name">{name}</span></>}

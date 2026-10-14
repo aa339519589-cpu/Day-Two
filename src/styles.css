@@ -286,6 +286,10 @@ svg {flex-shrink: 0}
 .sheet-header h2 {font-size: 18px}
 .sheet-content {padding: 0 24px calc(24px + var(--safe-b))}
 .sheet-note {font-size: 13px; color: var(--muted); margin: 7px 0 12px}
+.install-guide {font-size: 15px; line-height: 1.8; margin: 7px 0 25px}
+.install-guide p + p {margin-top: 11px}
+.install-guide strong {color: var(--ink); font-weight: 650}
+.install-guide .muted {font-size: 13px}
 .edit-form {display: flex; flex-direction: column; gap: 15px}
 .edit-form label {display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--muted)}
 .edit-form input, .edit-form textarea {border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); width: 100%; padding: 11px 12px}
