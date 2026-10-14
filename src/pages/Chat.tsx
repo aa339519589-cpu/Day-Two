@@ -1,15 +1,15 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { formatWhen } from '../logic'
+import { formatWhen, seatStatus } from '../logic'
 import { useStore } from '../store'
-import { Avatar, Back, Dialog, FitViewport, IconImage, LockScroll, Photo, useTitle } from '../ui'
+import { Avatar, Back, Dialog, FitViewport, IconClose, IconImage, LockScroll, Photo, useTitle } from '../ui'
 
 export function ChatPage() {
   const { personId = '' } = useParams()
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
-  const { data, sendText, sendImage, deleteThread } = useStore()
+  const { data, today, sendText, sendImage, deleteThread } = useStore()
   const person = data.people.find((item) => item.id === personId)
   const relation = data.relations.find((item) => item.personId === personId)
   const messages = data.messages.filter((item) => item.personId === personId)
@@ -31,9 +31,10 @@ export function ChatPage() {
   if (!person) {
     return (
       <div className="stack page">
+        <p className="eyebrow">NOT FOUND</p>
         <h1>没有这个对话</h1>
-        <button type="button" className="btn" onClick={() => navigate('/messages')}>
-          回消息
+        <button type="button" className="btn" style={{ marginTop: 20 }} onClick={() => navigate('/messages')}>
+          回消息列表
         </button>
       </div>
     )
@@ -41,6 +42,12 @@ export function ChatPage() {
 
   const active = relation?.status === 'active'
   const canSend = active
+  const subtitle =
+    relation?.status === 'active'
+      ? seatStatus(relation.since, relation.contract, person.pronoun, today)
+      : relation?.status === 'ended'
+        ? '关系已结束 · 历史存档'
+        : person.city
 
   const submit = () => {
     if (!canSend || !text.trim()) return
@@ -52,58 +59,114 @@ export function ChatPage() {
   return (
     <FitViewport>
       <LockScroll />
-      <header className="topbar">
+      <header className="topbar chat-topbar">
         <Back fallback="/messages" />
-        <Avatar initial={person.initial} />
-        <div className="grow">
-          <h1>{person.name}</h1>
-        </div>
+        <button
+          type="button"
+          className="chat-peer-head"
+          onClick={() => navigate(`/friend/${person.id}`)}
+        >
+          <Avatar initial={person.initial} tint={person.tint} />
+          <div className="chat-peer-meta">
+            <h1>{person.name}</h1>
+            <p>{subtitle}</p>
+          </div>
+        </button>
         {messages.length > 0 && (
-          <button type="button" className="btn text" onClick={() => setAskDelete(true)}>
-            删除
+          <button type="button" className="topbar-action" onClick={() => setAskDelete(true)}>
+            清空
           </button>
         )}
       </header>
+
       <div className="chat-log" ref={logRef}>
         <div className="chat-log-inner">
-        {messages.map((message, index) => {
-          const previous = messages[index - 1]
-          const gap = !previous || new Date(message.createdAt).getTime() - new Date(previous.createdAt).getTime() > 15 * 60 * 1000
-          const quoted = message.momentId ? data.moments.find((item) => item.id === message.momentId) : undefined
-          return (
-            <div key={message.id} style={{ display: 'contents' }}>
-              {gap && <div className="when">{formatWhen(message.createdAt)}</div>}
-              <article className={`bubble ${message.from === 'me' ? 'me' : 'them'}`}>
-                {quoted && (
-                  <button
-                    type="button"
-                    className="quote"
-                    onClick={() => (active ? navigate(`/feed/${personId}?m=${quoted.id}`) : setLightbox(quoted.image))}
-                  >
-                    <Photo image={quoted.image} alt="" />
-                    {quoted.caption ? <span>{quoted.caption}</span> : null}
-                  </button>
-                )}
-                {message.image && <Photo className="shot" image={message.image} alt="聊天照片" onClick={() => setLightbox(message.image!)} />}
-                {message.text && <p>{message.text}</p>}
-              </article>
+          {messages.length === 0 ? (
+            <div className="chat-empty-note">
+              <p className="serif">与 {person.name} 的对话</p>
+              <span>不急着寒暄，想说什么的时候再开口。</span>
             </div>
-          )
-        })}
+          ) : (
+            messages.map((message, index) => {
+              const previous = messages[index - 1]
+              const nextMsg = messages[index + 1]
+              const gap =
+                !previous ||
+                new Date(message.createdAt).getTime() - new Date(previous.createdAt).getTime() > 15 * 60 * 1000
+              const sameAsPrev = !gap && previous?.from === message.from
+              const sameAsNext =
+                nextMsg &&
+                nextMsg.from === message.from &&
+                new Date(nextMsg.createdAt).getTime() - new Date(message.createdAt).getTime() <= 15 * 60 * 1000
+              const quoted = message.momentId
+                ? data.moments.find((item) => item.id === message.momentId)
+                : undefined
+
+              return (
+                <div
+                  key={message.id}
+                  className={`msg-row ${message.from === 'me' ? 'me' : 'them'}${sameAsPrev ? ' tight' : ''}`}
+                >
+                  {gap && (
+                    <div className="when">
+                      <span>{formatWhen(message.createdAt)}</span>
+                    </div>
+                  )}
+                  <article
+                    className={`bubble ${message.from === 'me' ? 'me' : 'them'}${sameAsNext ? ' has-next' : ''}`}
+                  >
+                    {quoted && (
+                      <button
+                        type="button"
+                        className="quote"
+                        onClick={() =>
+                          active ? navigate(`/feed/${personId}?m=${quoted.id}`) : setLightbox(quoted.image)
+                        }
+                      >
+                        <Photo image={quoted.image} alt="" />
+                        <span className="quote-copy">
+                          <small>回应日常</small>
+                          <span>{quoted.caption || '一张日常照片'}</span>
+                        </span>
+                      </button>
+                    )}
+                    {message.image && (
+                      <Photo
+                        className="shot"
+                        image={message.image}
+                        alt="聊天照片"
+                        onClick={() => setLightbox(message.image!)}
+                      />
+                    )}
+                    {message.text && <p>{message.text}</p>}
+                  </article>
+                </div>
+              )
+            })
+          )}
         </div>
       </div>
+
       {moment && canSend && (
         <div className="draft">
           <Photo image={moment.image} alt="" />
-          <div className="grow">
-            {moment.caption ? <p>{moment.caption}</p> : null}
+          <div className="draft-copy">
+            <small>回应 {person.name} 的日常</small>
+            <p>{moment.caption || '日常照片'}</p>
           </div>
-          <button type="button" className="icon-btn" aria-label="取消回应" onClick={() => setParams({}, { replace: true })}>
-            ×
+          <button
+            type="button"
+            className="icon-btn draft-close"
+            aria-label="取消回应"
+            onClick={() => setParams({}, { replace: true })}
+          >
+            <IconClose />
           </button>
         </div>
       )}
+
       {error && <p className="error">{error}</p>}
+
       {canSend ? (
         <form
           className="composer"
@@ -112,7 +175,7 @@ export function ChatPage() {
             submit()
           }}
         >
-          <label className="icon-btn file-hit" aria-label="发送照片">
+          <label className="icon-btn file-hit composer-media" aria-label="发送照片">
             <IconImage />
             <input
               type="file"
@@ -125,7 +188,9 @@ export function ChatPage() {
                 setBusy(true)
                 setError('')
                 sendImage(personId, file)
-                  .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : '照片没有发出去。'))
+                  .catch((reason: unknown) =>
+                    setError(reason instanceof Error ? reason.message : '照片没有发出去。'),
+                  )
                   .finally(() => setBusy(false))
               }}
             />
@@ -134,6 +199,7 @@ export function ChatPage() {
             type="text"
             value={text}
             maxLength={500}
+            placeholder={`写给 ${person.name}…`}
             aria-label="消息"
             onChange={(event) => setText(event.target.value)}
           />
@@ -143,19 +209,26 @@ export function ChatPage() {
         </form>
       ) : (
         <div className="ended-bar">
-          <Link to={relation?.status === 'ended' ? `/friend/${personId}` : '/home'} className="fine">
-            {relation?.status === 'ended' ? '这段关系' : '席位'}
-          </Link>
-          {messages.length > 0 && (
-            <button type="button" className="btn ghost" onClick={() => setAskDelete(true)}>
-              删除聊天记录
-            </button>
-          )}
+          <div className="ended-bar-inner">
+            <span>你们当前不在彼此的席位中</span>
+            <div className="ended-bar-actions">
+              <Link to={relation?.status === 'ended' ? `/friend/${personId}` : '/home'} className="ended-link">
+                {relation?.status === 'ended' ? '查看这段关系' : '返回席位'}
+              </Link>
+              {messages.length > 0 && (
+                <button type="button" className="ended-delete" onClick={() => setAskDelete(true)}>
+                  删除记录
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
+
       {askDelete && (
         <Dialog
-          title="删除聊天"
+          title="删除聊天记录"
+          body={`确定清空与 ${person.name} 的全部对话记录吗？`}
           confirm="删除"
           danger
           onClose={() => setAskDelete(false)}
@@ -177,4 +250,3 @@ function Lightbox({ image, onClose }: { image: string; onClose: () => void }) {
     </button>
   )
 }
-

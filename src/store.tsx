@@ -65,7 +65,7 @@ function applyTheme(theme: ThemeMode) {
   else root.setAttribute('data-theme', theme)
   const dark =
     theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  const color = dark ? '#100f0d' : '#f3efe8'
+  const color = dark ? '#0e0e0d' : '#f4f1ea'
   document.querySelectorAll('meta[name="theme-color"]').forEach((node) => node.setAttribute('content', color))
 }
 
