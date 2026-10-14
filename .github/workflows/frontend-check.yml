@@ -1,85 +1,59 @@
-name: Frontend refinement verification
+name: Frontend check
 on:
   push:
-    branches: [design/day-two-refinement]
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 jobs:
-  verify:
+  check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
-      - name: Apply reviewed frontend source
-        run: |
-          python3 - <<'PY'
-          import base64,hashlib,json,lzma,pathlib,subprocess
-          root=pathlib.Path('.')
-          workflow=root/'.github/workflows/frontend-check.yml'
-          pathlib.Path('/tmp/bootstrap-workflow.yml').write_bytes(workflow.read_bytes())
-          parts=[root/f'.github/frontend-refinement/part-{i}.b64' for i in (1,2,3)]
-          packed=base64.b64decode(''.join(p.read_text().strip() for p in parts))
-          assert hashlib.sha256(packed).hexdigest()=='cf511f725473ac372a934625bb4e1f14123a84e0ac05c99a49592aaf12d1c3f1'
-          files={f['path']:f for f in json.loads(lzma.decompress(packed))}
-          packed=base64.b64decode((root/'.github/frontend-refinement/fixes.b64').read_text())
-          assert hashlib.sha256(packed).hexdigest()=='090bfdfa90019958a3e7328843366350309ea016f563df897db64c4c9f3e2be8'
-          for fix in json.loads(lzma.decompress(packed)):
-              if 'content' in fix:
-                  assert fix['path'] not in files
-                  files[fix['path']]=fix
-              else:
-                  f=files[fix['path']]
-                  for old,new in fix['replacements']:
-                      assert old in f['content'],old
-                      f['content']=f['content'].replace(old,new)
-          files=list(files.values())
-          allowed={'index.html','vite.config.ts','.github/workflows/frontend-check.yml','scripts/ui-smoke.mjs'}
-          for f in files:
-              p=pathlib.Path(f['path'])
-              assert not p.is_absolute() and '..' not in p.parts
-              assert f['path'] in allowed or f['path'].startswith('src/')
-              if f['before']:
-                  assert p.exists() and hashlib.sha256(p.read_bytes()).hexdigest()==f['before'],f'Concurrent edit: {p}'
-              elif p.exists() and str(p)!='.github/workflows/frontend-check.yml':
-                  raise RuntimeError(f'Unexpected existing file: {p}')
-          for f in files:
-              p=pathlib.Path(f['path']);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(f['content'])
-          pathlib.Path('/tmp/frontend-paths.json').write_text(json.dumps([f['path'] for f in files]))
-          pathlib.Path('ui-artifacts').mkdir(exist_ok=True)
-          pathlib.Path('ui-artifacts/expected.json').write_text(json.dumps({f['path']:hashlib.sha256(f['content'].encode()).hexdigest() for f in files},indent=2))
-          print('Applied',len(files),'reviewed files')
-          PY
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - name: Install browsers
+      - name: Install browser test tools
         run: |
           npm install --no-save --package-lock=false @playwright/test@1.57.0
           npx playwright install --with-deps chromium webkit
-      - name: Verify mobile interactions
+      - name: Test frontend
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/day-two-preview.log 2>&1 &
           for i in $(seq 1 30); do curl -sf http://127.0.0.1:4173 >/dev/null && break; sleep 1; done
           node scripts/ui-smoke.mjs
-      - name: Commit verified frontend on design branch
+      - name: Check public deployment
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
         run: |
           python3 - <<'PY'
-          import json,pathlib,subprocess
-          workflow='.github/workflows/frontend-check.yml'
-          pathlib.Path(workflow).write_bytes(pathlib.Path('/tmp/bootstrap-workflow.yml').read_bytes())
-          paths=[p for p in json.loads(pathlib.Path('/tmp/frontend-paths.json').read_text()) if p!=workflow]
-          subprocess.run(['git','add','--',*paths],check=True)
-          temporary=['.github/frontend-refinement/part-1.b64','.github/frontend-refinement/part-2.b64','.github/frontend-refinement/part-3.b64','.github/frontend-refinement/fixes.b64']
-          subprocess.run(['git','rm','--',*temporary],check=True)
-          subprocess.run(['git','config','user.name','github-actions[bot]'],check=True)
-          subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True)
-          subprocess.run(['git','commit','-m','Redesign Day Two mobile frontend with immersive photos and concise native-style interactions'],check=True)
-          subprocess.run(['git','push','origin','HEAD:design/day-two-refinement'],check=True)
-          pathlib.Path('ui-artifacts/commit.txt').write_text(subprocess.check_output(['git','rev-parse','HEAD'],text=True))
+          import datetime,json,os,pathlib,re,time,urllib.request
+          origin='https://day-two-6tjd.onrender.com'
+          assets=lambda text: sorted(set(re.findall(r'/assets/index-[A-Za-z0-9_-]+\.(?:js|css)',text)))
+          expected=assets(pathlib.Path('dist/index.html').read_text())
+          assert expected
+          report={'url':origin,'commit':os.environ['GITHUB_SHA'],'expected':expected,'matched':False}
+          for attempt in range(8):
+              try:
+                  req=urllib.request.Request(origin+'/?frontend-check='+os.environ['GITHUB_SHA']+'&attempt='+str(attempt),headers={'Cache-Control':'no-cache','User-Agent':'DayTwo-Deployment-Check'})
+                  with urllib.request.urlopen(req,timeout=15) as response:
+                      body=response.read().decode('utf-8'); report['httpStatus']=response.status
+                  report['served']=assets(body)
+                  report['matched']=expected==report['served']
+                  report.pop('error',None)
+                  if report['matched']: break
+              except Exception as error: report['error']=str(error)
+              if attempt<7: time.sleep(10)
+          report['checkedAt']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+          pathlib.Path('ui-artifacts').mkdir(exist_ok=True)
+          pathlib.Path('ui-artifacts/deployment.json').write_text(json.dumps(report,indent=2))
+          print(json.dumps(report,indent=2))
           PY
       - uses: actions/upload-artifact@v4
         if: always()
