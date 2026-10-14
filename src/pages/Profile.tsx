@@ -31,17 +31,14 @@ export function ProfilePage() {
   return (
     <div className="screen">
       <div className="profile-head">
-        <Avatar initial={initialOf(name)} tint={data.me.tint} large />
+        <Avatar initial={initialOf(name)} large />
         <h1>{name || '未命名'}</h1>
       </div>
       <form
         onSubmit={(event) => {
           event.preventDefault()
           const trimmed = name.trim()
-          if (!trimmed) {
-            setError('先写一个称呼。')
-            return
-          }
+          if (!trimmed) return
           saveMe({
             ...data.me,
             name: trimmed.slice(0, 16),
@@ -68,11 +65,11 @@ export function ProfilePage() {
         </label>
         <label className="field">
           <span>语言</span>
-          <input value={languages} placeholder="中文、英语" onChange={(event) => setLanguages(event.target.value)} />
+          <input value={languages} onChange={(event) => setLanguages(event.target.value)} />
         </label>
         <label className="field">
           <span>兴趣</span>
-          <input value={interests} placeholder="走路、胶片" onChange={(event) => setInterests(event.target.value)} />
+          <input value={interests} onChange={(event) => setInterests(event.target.value)} />
         </label>
         {error && <p className="error">{error}</p>}
         <button className="btn" type="submit">
@@ -112,7 +109,6 @@ export function ProfilePage() {
       {askReset && (
         <Dialog
           title="重置"
-          body="名字、聊天和上传的照片会清掉。"
           confirm="重置"
           danger
           onClose={() => setAskReset(false)}

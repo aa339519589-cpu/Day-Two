@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { dayCount, formatWhen } from '../logic'
+import { formatWhen } from '../logic'
 import { useStore } from '../store'
 import { Avatar, Back, Dialog, FitViewport, IconImage, LockScroll, Photo, useTitle } from '../ui'
 
@@ -54,16 +54,9 @@ export function ChatPage() {
       <LockScroll />
       <header className="topbar">
         <Back fallback="/messages" />
-        <Avatar initial={person.initial} tint={person.tint} />
+        <Avatar initial={person.initial} />
         <div className="grow">
           <h1>{person.name}</h1>
-          <p>
-            {relation?.status === 'active' && `第 ${dayCount(relation.since)} 天`}
-            {relation?.status === 'ended' && '关系已结束'}
-            {relation?.status === 'incoming' && '还没坐进席位'}
-            {relation?.status === 'outgoing' && '等待对方同意'}
-            {!relation && '还不是好友'}
-          </p>
         </div>
         {messages.length > 0 && (
           <button type="button" className="btn text" onClick={() => setAskDelete(true)}>
@@ -73,7 +66,6 @@ export function ChatPage() {
       </header>
       <div className="chat-log" ref={logRef}>
         <div className="chat-log-inner">
-        {messages.length === 0 && <p className="note">还没有消息</p>}
         {messages.map((message, index) => {
           const previous = messages[index - 1]
           const gap = !previous || new Date(message.createdAt).getTime() - new Date(previous.createdAt).getTime() > 15 * 60 * 1000
@@ -89,7 +81,7 @@ export function ChatPage() {
                     onClick={() => (active ? navigate(`/feed/${personId}?m=${quoted.id}`) : setLightbox(quoted.image))}
                   >
                     <Photo image={quoted.image} alt="" />
-                    <span>{quoted.caption || '一张日常'}</span>
+                    {quoted.caption ? <span>{quoted.caption}</span> : null}
                   </button>
                 )}
                 {message.image && <Photo className="shot" image={message.image} alt="聊天照片" onClick={() => setLightbox(message.image!)} />}
@@ -104,8 +96,7 @@ export function ChatPage() {
         <div className="draft">
           <Photo image={moment.image} alt="" />
           <div className="grow">
-            <small>回应这张日常</small>
-            <p>{moment.caption || '没有配文'}</p>
+            {moment.caption ? <p>{moment.caption}</p> : null}
           </div>
           <button type="button" className="icon-btn" aria-label="取消回应" onClick={() => setParams({}, { replace: true })}>
             ×
@@ -143,7 +134,7 @@ export function ChatPage() {
             type="text"
             value={text}
             maxLength={500}
-            placeholder={busy ? '正在处理照片…' : '写一句就好'}
+            aria-label="消息"
             onChange={(event) => setText(event.target.value)}
           />
           <button className="send" type="submit" disabled={!text.trim() || busy}>
@@ -152,7 +143,6 @@ export function ChatPage() {
         </form>
       ) : (
         <div className="ended-bar">
-          {relation?.status === 'ended' ? '已结束' : '还不能发送'}
           <Link to={relation?.status === 'ended' ? `/friend/${personId}` : '/home'} className="fine">
             {relation?.status === 'ended' ? '这段关系' : '席位'}
           </Link>
@@ -166,7 +156,6 @@ export function ChatPage() {
       {askDelete && (
         <Dialog
           title="删除聊天"
-          body="关系和照片都还在。"
           confirm="删除"
           danger
           onClose={() => setAskDelete(false)}

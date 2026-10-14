@@ -26,7 +26,6 @@ export function DailyPage() {
               <span className="frame-veil" />
               <span className="frame-meta">
                 <strong>我</strong>
-                <span>{count(data.moments, 'me')} 张</span>
               </span>
             </div>
           ) : (
@@ -46,7 +45,6 @@ export function DailyPage() {
                 <span className="frame-veil" />
                 <span className="frame-meta">
                   <strong>{person.name}</strong>
-                  <span>{count(data.moments, person.id)} 张</span>
                 </span>
               </div>
             </button>
@@ -61,6 +59,4 @@ function latest(moments: { authorId: string; createdAt: string; image: string }[
   return moments.filter((moment) => moment.authorId === authorId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
 }
 
-function count(moments: { authorId: string }[], authorId: string) {
-  return moments.filter((moment) => moment.authorId === authorId).length
-}
+

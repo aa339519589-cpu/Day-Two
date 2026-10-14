@@ -30,14 +30,12 @@ export function MessagesPage() {
     <div className="screen">
       <h1>消息</h1>
       <div className="threads">
-        {rows.length === 0 && <p className="footnote">没有消息</p>}
         {rows.map((row) => (
           <button key={row.id} type="button" className="thread" onClick={() => navigate(`/chat/${row.id}`)}>
-            <Avatar initial={row.person!.initial} tint={row.person!.tint} />
+            <Avatar initial={row.person!.initial} />
             <span className="body">
               <strong>
                 {row.person!.name}
-                {row.rel?.status === 'ended' && <em>关系已结束</em>}
               </strong>
               <p>{preview(row.last)}</p>
             </span>
@@ -50,9 +48,8 @@ export function MessagesPage() {
 }
 
 function preview(last: { from: 'me' | 'them'; text: string; image?: string; momentId?: string } | undefined) {
-  if (!last) return '还没有消息'
-  if (last.momentId && last.text) return last.text
-  if (last.momentId) return last.from === 'me' ? '你回应了一张日常' : '回应了一张日常'
-  if (last.image) return last.from === 'me' ? '你发了一张照片' : '发来一张照片'
+  if (!last) return ''
+  if (last.text) return last.text
+  if (last.momentId || last.image) return ''
   return last.text
 }

@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BRAND } from '../brand'
 import { useImage } from '../images'
-import { decideDir, formatWhen } from '../logic'
+import { decideDir } from '../logic'
 import { useStore } from '../store'
 import type { Moment } from '../types'
 import { Dialog, IconBack, LockScroll, useTitle } from '../ui'
@@ -26,7 +26,6 @@ export function FeedPage() {
     return found < 0 ? 0 : found
   })
   const safeIndex = list.length === 0 ? 0 : Math.min(index, list.length - 1)
-  const [hint, setHint] = useState(() => sessionStorage.getItem('daytwo-swiped') !== '1')
   const [confirm, setConfirm] = useState(false)
   const stageRef = useRef<HTMLDivElement>(null)
   const reelRef = useRef<HTMLDivElement>(null)
@@ -75,8 +74,6 @@ export function FeedPage() {
       )
       return
     }
-    sessionStorage.setItem('daytwo-swiped', '1')
-    setHint(false)
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setIndex(next)
       return
@@ -188,7 +185,7 @@ export function FeedPage() {
   if (blocked) {
     return (
       <div className="stack page">
-        <h1>日常已关闭</h1>
+        <h1>{person?.name}</h1>
         <button type="button" className="btn" style={{ marginTop: 18 }} onClick={() => navigate(`/chat/${personId}`)}>
           聊天记录
         </button>
@@ -208,7 +205,7 @@ export function FeedPage() {
           <button type="button" className="icon-btn solid" aria-label="返回" onClick={() => navigate(isMe ? '/daily' : '/home')}>
             <IconBack />
           </button>
-          <h1 style={{ marginTop: 24 }}>{isMe ? '还没有日常' : '还没有照片'}</h1>
+          <h1 style={{ marginTop: 24 }}>{isMe ? '日常' : name}</h1>
           {isMe && (
             <button type="button" className="btn" style={{ marginTop: 18 }} onClick={() => navigate('/compose')}>
               记下今天
@@ -228,15 +225,12 @@ export function FeedPage() {
             </button>
             <div className="grow">
               <strong>{name}</strong>
-              <span>{isMe ? data.me.city : person?.city}</span>
             </div>
           </header>
-          {hint && list.length > 1 && <div className="hint">上滑</div>}
           {current && (
             <footer className="feed-bottom">
               {current.caption && <p className="cap">{current.caption}</p>}
               <div className="feed-meta">
-                <span>{formatWhen(current.createdAt)}</span>
                 <span className="feed-count" aria-live="polite">
                   {safeIndex + 1} / {list.length}
                 </span>
@@ -265,7 +259,6 @@ export function FeedPage() {
       {confirm && current && (
         <Dialog
           title="移除这张"
-          body="从日常里拿掉。"
           confirm="移除"
           danger
           onClose={() => setConfirm(false)}

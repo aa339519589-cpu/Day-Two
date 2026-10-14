@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { dayCount, recentDays, streakInfo, todayLine } from '../logic'
+import { recentDays } from '../logic'
 import { useStore } from '../store'
 import { Avatar, Back, Dialog, Photo, useTitle } from '../ui'
 
@@ -38,11 +38,7 @@ export function FriendPage() {
           <h1>{person.name}</h1>
         </header>
         <div className="section">
-          <Avatar initial={person.initial} tint={person.tint} large />
-          <p className="lede">{person.bio}</p>
-          <p className="meta-line">
-            {person.city} · {person.languages.join('、')}
-          </p>
+          <Avatar initial={person.initial} large />
           <div className="stack-btns" style={{ marginTop: 18 }}>
             {relation?.status === 'incoming' && (
               <>
@@ -80,7 +76,6 @@ export function FriendPage() {
       <div className="stack page">
         <Back />
         <h1 style={{ marginTop: 12 }}>{person.name}</h1>
-        <p className="lede">已结束</p>
         <div className="stack-btns" style={{ marginTop: 18 }}>
           <button type="button" className="btn" onClick={() => navigate(`/chat/${person.id}`)}>
             聊天记录
@@ -94,7 +89,6 @@ export function FriendPage() {
   }
 
   const contract = relation.contract
-  const streak = streakInfo(contract, store.today)
   const rows = recentDays(contract, store.today)
 
   return (
@@ -106,21 +100,12 @@ export function FriendPage() {
           <Back light />
         </span>
         <div className="cover-copy">
-          <Avatar initial={person.initial} tint={person.tint} large />
+          <Avatar initial={person.initial} large />
           <div>
             <h1>{person.name}</h1>
-            <p>
-              第 {dayCount(relation.since)} 天 · {person.city}
-            </p>
           </div>
         </div>
       </div>
-      <section className="section">
-        <p className="prose">{person.bio}</p>
-        <p className="meta-line">
-          {person.languages.join('、')} · {person.interests.join('、')}
-        </p>
-      </section>
       <div className="actions">
         <button type="button" className="btn" onClick={() => navigate(`/feed/${person.id}`)}>
           看日常
@@ -147,8 +132,6 @@ export function FriendPage() {
         )}
         {(contract.status === 'active' || contract.status === 'paused') && (
           <>
-            <p className="streak">连续 {streak.days} 天</p>
-            <p className="fine">{contract.status === 'paused' ? '已暂停' : todayLine(contract, person.pronoun, store.today)}</p>
             {rows.length > 0 && (
               <ol className="marks">
                 {[...rows].reverse().map((row) => (
@@ -181,7 +164,6 @@ export function FriendPage() {
       {askLeave && (
         <Dialog
           title="退出"
-          body="席位会空出来。聊天还留着。"
           confirm="退出"
           danger
           onClose={() => setAskLeave(false)}
@@ -195,7 +177,6 @@ export function FriendPage() {
       {askEnd && (
         <Dialog
           title="结束约定"
-          body="人还在。聊天和照片都还在。"
           confirm="结束约定"
           danger
           onClose={() => setAskEnd(false)}

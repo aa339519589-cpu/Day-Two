@@ -30,7 +30,6 @@ export function LandingPage() {
           <br />
           还想说话。
         </h1>
-        <p className="tag">{BRAND.tagline}</p>
         {open && !data.onboarded ? (
           <form
             className="gate-form"
@@ -45,7 +44,6 @@ export function LandingPage() {
             <input
               value={name}
               maxLength={16}
-              placeholder="你的名字"
               aria-label="你的名字"
               onChange={(event) => setName(event.target.value)}
               autoFocus

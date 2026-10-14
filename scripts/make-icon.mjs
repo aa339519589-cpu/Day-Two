@@ -78,9 +78,9 @@ function bar(x, y, size, cx) {
 
 function paint(x, y, size) {
   if (!rounded(x, y, size)) return [0, 0, 0, 0]
-  if (bar(x, y, size, size * 0.39)) return [244, 239, 232, 255]
-  if (bar(x, y, size, size * 0.61)) return [224, 138, 98, 255]
-  return [28, 25, 21, 255]
+  if (bar(x, y, size, size * 0.39)) return [168, 199, 232, 255]
+  if (bar(x, y, size, size * 0.61)) return [243, 225, 160, 255]
+  return [248, 247, 241, 255]
 }
 
 for (const size of [180, 192, 512]) {

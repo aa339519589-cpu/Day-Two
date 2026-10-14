@@ -38,7 +38,6 @@ export function ComposePage() {
           <Back fallback="/daily" />
           <div className="grow">
             <h1>记下今天</h1>
-            <p>可以不写字</p>
           </div>
         </header>
         <div className="preview">
@@ -48,7 +47,7 @@ export function ComposePage() {
               <img className="fit" src={preview} alt="即将放入日常的照片" />
             </>
           ) : (
-            <div className="empty">从相册选一张今天的照片。吃的、路、天色，都可以。</div>
+            <div className="empty" />
           )}
         </div>
         {error && <p className="error">{error}</p>}
@@ -67,7 +66,7 @@ export function ComposePage() {
           </label>
           <label className="field">
             <span>一句话</span>
-            <input value={caption} maxLength={80} placeholder="可以空着" onChange={(event) => setCaption(event.target.value)} />
+            <input value={caption} maxLength={80} aria-label="一句话" onChange={(event) => setCaption(event.target.value)} />
           </label>
           <button
             type="button"

@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { seatStatus } from '../logic'
 import { useStore } from '../store'
 import type { Person, Relation } from '../types'
 import { Photo, useTitle } from '../ui'
@@ -56,7 +55,7 @@ export function HomePage() {
 }
 
 function Seat({ rel }: { rel: Relation }) {
-  const { data, today } = useStore()
+  const { data } = useStore()
   const navigate = useNavigate()
   const person = data.people.find((item) => item.id === rel.personId)
   if (!person) return null
@@ -67,7 +66,6 @@ function Seat({ rel }: { rel: Relation }) {
       <span className="seat-veil" />
       <span className="seat-meta">
         <span className="seat-name">{person.name}</span>
-        <span className="seat-sub">{seatStatus(rel.since, rel.contract, person.pronoun, today)}</span>
       </span>
     </button>
   )
@@ -101,7 +99,6 @@ function OpenSlot({
   const { data } = useStore()
   const { person } = fill
   const cover = latest(data.moments, person.id)
-  const sub = fill.kind === 'incoming' ? '想认识你' : fill.kind === 'outgoing' ? '等待中' : fill.ended ? '再坐回来' : person.city
 
   return (
     <article className="seat request">
@@ -110,7 +107,6 @@ function OpenSlot({
       <button type="button" className="seat-hit" aria-label={person.name} onClick={onOpen} />
       <span className="seat-meta">
         <span className="seat-name">{person.name}</span>
-        <span className="seat-sub">{sub}</span>
       </span>
       <div className="seat-actions">
         {fill.kind === 'incoming' && (

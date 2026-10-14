@@ -57,9 +57,10 @@ export function IconImage() {
   )
 }
 
-export function Avatar({ initial, tint, large = false }: { initial: string; tint: string; large?: boolean }) {
+export function Avatar({ initial, large = false }: { initial: string; tint?: string; large?: boolean }) {
+  const tone = (initial.codePointAt(0) ?? 0) % 2 === 0 ? '#a8c7e8' : '#f3e1a0'
   return (
-    <span className={large ? 'avatar lg' : 'avatar'} style={{ background: tint }} aria-hidden>
+    <span className={large ? 'avatar lg' : 'avatar'} style={{ background: tone }} aria-hidden>
       {initial}
     </span>
   )
@@ -116,7 +117,7 @@ export function Dialog({
   onClose,
 }: {
   title: string
-  body: string
+  body?: string
   confirm: string
   danger?: boolean
   onConfirm: () => void
@@ -135,7 +136,7 @@ export function Dialog({
     <div className="dialog-back" onClick={onClose}>
       <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" onClick={(event) => event.stopPropagation()}>
         <h2 id="dialog-title">{title}</h2>
-        <p>{body}</p>
+        {body ? <p>{body}</p> : null}
         <div className="stack-btns">
           <button ref={ref} type="button" className={danger ? 'btn danger' : 'btn'} onClick={onConfirm}>
             {confirm}

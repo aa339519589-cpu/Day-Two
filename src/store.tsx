@@ -277,7 +277,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
         }
         setData((current) => markActive({ ...current, messages: [...current.messages, message] }, personId, todayKey()))
-        if (rel.contract.status === 'paused') showToast('暂停中，不计入')
+        if (rel.contract.status === 'paused') showToast('已暂停')
       },
       sendImage: async (personId, file) => {
         const rel = data.relations.find((item) => item.personId === personId && item.status === 'active')
@@ -294,7 +294,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
         }
         setData((current) => markActive({ ...current, messages: [...current.messages, message] }, personId, todayKey()))
-        if (rel.contract.status === 'paused') showToast('暂停中，不计入')
+        if (rel.contract.status === 'paused') showToast('已暂停')
       },
       removeMoment: async (id) => {
         const moment = data.moments.find((item) => item.id === id)
