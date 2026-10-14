@@ -25,6 +25,10 @@ jobs:
           packed=base64.b64decode(''.join(p.read_text().strip() for p in parts))
           assert hashlib.sha256(packed).hexdigest()=='cf511f725473ac372a934625bb4e1f14123a84e0ac05c99a49592aaf12d1c3f1'
           files=json.loads(lzma.decompress(packed))
+          profile=next(f for f in files if f['path']=='src/pages/Profile.tsx')
+          old='<label>简介<textarea value={draft.bio}'
+          assert old in profile['content']
+          profile['content']=profile['content'].replace(old,'<label>简介<textarea aria-label="简介" value={draft.bio}')
           replacements=[
             ("import { chromium, webkit } from 'playwright'", "import { chromium, webkit } from 'playwright'\nimport { expect } from '@playwright/test'"),
             ("assert.equal(await page.locator('.friend-window').count(),3)", "await expect(page.locator('.friend-window')).toHaveCount(3)"),
