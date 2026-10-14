@@ -1,250 +1,30 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BRAND } from '../brand'
-import { initialOf, splitList } from '../logic'
+import { splitList } from '../logic'
 import { useStore } from '../store'
+import { useTitle } from '../ui'
+import { Icon, PersonAvatar, Sheet, type IconName } from '../components/Elements'
 import type { ThemeMode } from '../types'
-import { Avatar, Dialog, IconChevronRight, useTitle } from '../ui'
-
+type InstallEvent = Event & {prompt: () => Promise<void>}
 export function ProfilePage() {
-  const { data, theme, setTheme, saveMe, resetDemo, showToast } = useStore()
+  const { data, theme, setTheme, saveMe, showToast } = useStore()
   const navigate = useNavigate()
-  const [editing, setEditing] = useState(false)
-  const [name, setName] = useState(data.me.name)
-  const [bio, setBio] = useState(data.me.bio)
-  const [city, setCity] = useState(data.me.city)
-  const [languages, setLanguages] = useState(data.me.languages.join('、'))
-  const [interests, setInterests] = useState(data.me.interests.join('、'))
-  const [error, setError] = useState('')
-  const [askReset, setAskReset] = useState(false)
-  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null)
-  useTitle(`档案 · ${BRAND.name}`)
-
-  const myMomentsCount = data.moments.filter((m) => m.authorId === 'me').length
-  const activeCount = data.relations.filter((r) => r.status === 'active').length
-
-  useEffect(() => {
-    const onPrompt = (event: Event) => {
-      event.preventDefault()
-      setInstallEvent(event as BeforeInstallPromptEvent)
-    }
-    window.addEventListener('beforeinstallprompt', onPrompt)
-    return () => window.removeEventListener('beforeinstallprompt', onPrompt)
-  }, [])
-
-  const handleSave = (event: React.FormEvent) => {
-    event.preventDefault()
-    const trimmed = name.trim()
-    if (!trimmed) {
-      setError('请填写你的称呼。')
-      return
-    }
-    saveMe({
-      ...data.me,
-      name: trimmed.slice(0, 16),
-      bio: bio.trim().slice(0, 80),
-      city: city.trim().slice(0, 12) || '这里',
-      languages: splitList(languages).length ? splitList(languages) : ['中文'],
-      interests: splitList(interests),
-    })
-    setError('')
-    setEditing(false)
-    showToast('已保存')
-  }
-
-  return (
-    <div className="screen profile-screen">
-      <header className="page-masthead">
-        <div className="masthead-row">
-          <h1>我的</h1>
-          <button
-            type="button"
-            className="masthead-btn"
-            onClick={() => {
-              if (editing) {
-                setName(data.me.name)
-                setBio(data.me.bio)
-                setCity(data.me.city)
-                setLanguages(data.me.languages.join('、'))
-                setInterests(data.me.interests.join('、'))
-                setError('')
-              }
-              setEditing((prev) => !prev)
-            }}
-          >
-            {editing ? '取消' : '编辑资料'}
-          </button>
-        </div>
-      </header>
-
-      <section className="profile-card">
-        <div className="profile-identity">
-          <Avatar initial={initialOf(data.me.name)} tint={data.me.tint} large />
-          <div className="profile-identity-text">
-            <h2>{data.me.name || '未命名'}</h2>
-            <p className="profile-location">
-              {data.me.city || '这里'} · {data.me.languages.join(' / ')}
-            </p>
-          </div>
-        </div>
-        <p className="profile-bio">{data.me.bio || '还没有写下简介。'}</p>
-        {data.me.interests.length > 0 && (
-          <div className="interest-inline">
-            {data.me.interests.map((item) => (
-              <span key={item} className="tag-chip">
-                {item}
-              </span>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {editing && (
-        <form className="ios-form-group" onSubmit={handleSave}>
-          <div className="group-caption">编辑档案信息</div>
-          <div className="ios-table">
-            <label className="ios-cell">
-              <span className="cell-label">称呼</span>
-              <input
-                value={name}
-                maxLength={16}
-                placeholder="你的名字"
-                onChange={(event) => setName(event.target.value)}
-              />
-            </label>
-            <label className="ios-cell">
-              <span className="cell-label">城市</span>
-              <input
-                value={city}
-                maxLength={12}
-                placeholder="所在城市"
-                onChange={(event) => setCity(event.target.value)}
-              />
-            </label>
-            <label className="ios-cell">
-              <span className="cell-label">语言</span>
-              <input
-                value={languages}
-                placeholder="用顿号分隔，如：中文、英语"
-                onChange={(event) => setLanguages(event.target.value)}
-              />
-            </label>
-            <label className="ios-cell">
-              <span className="cell-label">兴趣</span>
-              <input
-                value={interests}
-                placeholder="用顿号分隔，如：胶片、散步"
-                onChange={(event) => setInterests(event.target.value)}
-              />
-            </label>
-            <label className="ios-cell stacked">
-              <span className="cell-label">简介</span>
-              <textarea
-                value={bio}
-                maxLength={80}
-                rows={2}
-                placeholder="写一句关于你自己的话"
-                onChange={(event) => setBio(event.target.value)}
-              />
-            </label>
-          </div>
-          {error && <p className="error">{error}</p>}
-          <button className="btn" type="submit" style={{ marginTop: 12 }}>
-            保存修改
-          </button>
-        </form>
-      )}
-
-      <section className="settings-section">
-        <div className="group-caption">日常与席位</div>
-        <div className="ios-list">
-          <button type="button" className="ios-row" onClick={() => navigate('/feed/me')}>
-            <span className="row-title">我的日常</span>
-            <span className="row-trail">
-              <span>{myMomentsCount} 张照片</span>
-              <IconChevronRight />
-            </span>
-          </button>
-          <button type="button" className="ios-row" onClick={() => navigate('/compose')}>
-            <span className="row-title">记下今天</span>
-            <span className="row-trail">
-              <span>发布瞬间</span>
-              <IconChevronRight />
-            </span>
-          </button>
-          <button type="button" className="ios-row" onClick={() => navigate('/home')}>
-            <span className="row-title">席位状态</span>
-            <span className="row-trail">
-              <span>{activeCount} / 3 席在位</span>
-              <IconChevronRight />
-            </span>
-          </button>
-        </div>
-      </section>
-
-      <section className="settings-section">
-        <div className="group-caption">外观模式</div>
-        <div className="segmented" role="radiogroup" aria-label="外观模式">
-          {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              role="radio"
-              aria-checked={theme === mode}
-              className={theme === mode ? 'on' : undefined}
-              onClick={() => setTheme(mode)}
-            >
-              {mode === 'light' ? '浅色' : mode === 'dark' ? '深色' : '跟随系统'}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {(installEvent || import.meta.env.DEV) && (
-        <section className="settings-section">
-          <div className="group-caption">系统与数据</div>
-          <div className="ios-list">
-            {installEvent && (
-              <button
-                type="button"
-                className="ios-row"
-                onClick={() => {
-                  void installEvent.prompt()
-                  setInstallEvent(null)
-                }}
-              >
-                <span className="row-title">添加到主屏幕</span>
-                <span className="row-trail">
-                  <IconChevronRight />
-                </span>
-              </button>
-            )}
-            {import.meta.env.DEV && (
-              <button type="button" className="ios-row destructive" onClick={() => setAskReset(true)}>
-                <span className="row-title">重置演示数据</span>
-                <span className="row-trail">
-                  <span>恢复初始状态</span>
-                </span>
-              </button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {askReset && (
-        <Dialog
-          title="重置演示数据"
-          body="所有新增的照片、对话与席位变更都将恢复为初始演示状态。"
-          confirm="确认重置"
-          danger
-          onClose={() => setAskReset(false)}
-          onConfirm={() => {
-            void resetDemo()
-          }}
-        />
-      )}
-    </div>
-  )
+  const [editing,setEditing] = useState(false)
+  const [draft,setDraft] = useState(data.me)
+  const [languages,setLanguages] = useState(data.me.languages.join('、'))
+  const [interests,setInterests] = useState(data.me.interests.join('、'))
+  const [install,setInstall] = useState<InstallEvent | null>(null)
+  useTitle('我的 · Day Two')
+  useEffect(() => {const handler = (e: Event) => {e.preventDefault();setInstall(e as InstallEvent)};window.addEventListener('beforeinstallprompt',handler);return () => window.removeEventListener('beforeinstallprompt',handler)},[])
+  const open = () => {setDraft(data.me);setLanguages(data.me.languages.join('、'));setInterests(data.me.interests.join('、'));setEditing(true)}
+  const save = (e: FormEvent) => {e.preventDefault();if (!draft.name.trim()) return;saveMe({...draft,name:draft.name.trim().slice(0,16),bio:draft.bio.trim().slice(0,80),city:draft.city.trim().slice(0,12),languages:splitList(languages),interests:splitList(interests)});setEditing(false);showToast('已保存')}
+  const modes: {id:ThemeMode; label:string; icon:IconName}[] = [{id:'light',label:'浅色',icon:'sun'},{id:'dark',label:'深色',icon:'moon'},{id:'system',label:'自动',icon:'system'}]
+  return <section className="screen profile-screen"><header className="page-header"><h1>我的</h1><button type="button" className="icon-button" aria-label="编辑资料" onClick={open}><Icon name="edit"/></button></header>
+    <div className="profile-identity"><PersonAvatar id="me" size="large"/><h2>{data.me.name}</h2>{data.me.city && <span className="profile-city">{data.me.city}</span>}{data.me.bio && <p className="profile-bio">{data.me.bio}</p>}{data.me.interests.length > 0 && <div className="profile-interests">{data.me.interests.map(t => <span key={t}>{t}</span>)}</div>}</div>
+    <div className="profile-stats"><button type="button" onClick={() => navigate('/feed/me')}><strong>{data.moments.filter(m => m.authorId === 'me').length}</strong><span>日常</span></button><span className="stats-divider"/><button type="button" onClick={() => navigate('/home')}><strong>{data.relations.filter(r => r.status === 'active').length}</strong><span>朋友</span></button></div>
+    <div className="settings-list"><button type="button" className="settings-row" onClick={() => navigate('/feed/me')}><Icon name="photo"/><span>我的日常</span><Icon name="chevron" size={17}/></button><button type="button" className="settings-row" onClick={open}><Icon name="me"/><span>个人资料</span><Icon name="chevron" size={17}/></button>{install && <button type="button" className="settings-row" onClick={() => {void install.prompt();setInstall(null)}}><Icon name="plus"/><span>添加到主屏幕</span><Icon name="chevron" size={17}/></button>}</div>
+    <section className="appearance"><h3>外观</h3><div className="theme-picker" aria-label="外观">{modes.map(m => <button type="button" key={m.id} aria-pressed={theme === m.id} className={theme === m.id ? 'selected' : ''} onClick={() => setTheme(m.id)}><Icon name={m.icon} size={18}/><span>{m.label}</span></button>)}</div></section>
+    <p className="profile-version">Day Two <span>· 本地体验</span></p>
+    {editing && <Sheet title="编辑资料" onClose={() => setEditing(false)}><form className="edit-form" onSubmit={save}><label>名字<input autoComplete="nickname" required value={draft.name} maxLength={16} onChange={e => setDraft({...draft,name:e.target.value})}/></label><label>简介<textarea aria-label="简介" value={draft.bio} rows={2} maxLength={80} onChange={e => setDraft({...draft,bio:e.target.value})}/></label><label>城市<input value={draft.city} maxLength={12} onChange={e => setDraft({...draft,city:e.target.value})}/></label><label>语言<input value={languages} onChange={e => setLanguages(e.target.value)} placeholder="中文、英语"/></label><label>兴趣<input value={interests} onChange={e => setInterests(e.target.value)} placeholder="摄影、散步"/></label><button className="primary-button" type="submit" disabled={!draft.name.trim()}>保存</button></form></Sheet>}
+  </section>
 }
-
-type BeforeInstallPromptEvent = Event & { prompt: () => Promise<void> }

@@ -1,95 +1,17 @@
 import { useNavigate } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { dayCount, formatWhen, todayLine } from '../logic'
+import { formatWhen } from '../logic'
 import { useStore } from '../store'
-import { Avatar, useTitle } from '../ui'
-
+import { useTitle } from '../ui'
+import { Icon, PersonAvatar } from '../components/Elements'
 export function MessagesPage() {
-  const { data, today } = useStore()
+  const { data } = useStore()
   const navigate = useNavigate()
   useTitle(`消息 · ${BRAND.name}`)
-
-  const ids = new Set<string>()
-  for (const rel of data.relations) {
-    if (rel.status === 'active' || rel.status === 'ended') ids.add(rel.personId)
-  }
-  for (const message of data.messages) ids.add(message.personId)
-
-  const rows = [...ids]
-    .map((id) => {
-      const person = data.people.find((item) => item.id === id)
-      const rel = data.relations.find((item) => item.personId === id)
-      const thread = data.messages.filter((item) => item.personId === id)
-      const last = thread[thread.length - 1]
-      return { id, person, rel, last, count: thread.length }
-    })
-    .filter((row) => row.person)
-    .sort((a, b) =>
-      (b.last?.createdAt ?? b.rel?.since ?? '').localeCompare(a.last?.createdAt ?? a.rel?.since ?? ''),
-    )
-
-  return (
-    <div className="screen messages-screen">
-      <header className="page-masthead">
-        <h1>来往</h1>
-        <p className="masthead-sub">你与席位里那些人的对话，都收在这里。</p>
-      </header>
-
-      {rows.length === 0 ? (
-        <div className="empty-panel">
-          <p className="serif">还没有说过的话</p>
-          <span className="fine">当你在席位里跟谁开了口，对话就会留在这里。</span>
-        </div>
-      ) : (
-        <div className="threads">
-          {rows.map((row) => {
-            const person = row.person!
-            const rel = row.rel
-            const isEnded = rel?.status === 'ended'
-            const badge =
-              rel?.status === 'active'
-                ? rel.contract.status === 'active'
-                  ? todayLine(rel.contract, person.pronoun, today)
-                  : `第 ${dayCount(rel.since)} 天`
-                : isEnded
-                  ? '已结束'
-                  : ''
-
-            return (
-              <button
-                key={row.id}
-                type="button"
-                className={`thread${isEnded ? ' is-ended' : ''}`}
-                onClick={() => navigate(`/chat/${row.id}`)}
-              >
-                <Avatar initial={person.initial} tint={person.tint} />
-                <span className="body">
-                  <span className="thread-top">
-                    <span className="thread-name-group">
-                      <strong>{person.name}</strong>
-                      {badge && <em className="thread-badge">{badge}</em>}
-                    </span>
-                    {row.last && <time className="thread-time">{formatWhen(row.last.createdAt)}</time>}
-                  </span>
-                  <p className="thread-excerpt">{preview(row.last, person.pronoun)}</p>
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function preview(
-  last: { from: 'me' | 'them'; text: string; image?: string; momentId?: string } | undefined,
-  pronoun: string,
-) {
-  if (!last) return '还没有开始对话'
-  const prefix = last.from === 'me' ? '我：' : ''
-  if (last.text) return `${prefix}${last.text}`
-  if (last.image) return `${prefix}[照片]`
-  if (last.momentId) return `${prefix}回应了${last.from === 'me' ? pronoun : '我'}的日常`
-  return '还没有开始对话'
+  const ids = new Set([...data.relations.filter(r => r.status === 'active' || r.status === 'ended').map(r => r.personId), ...data.messages.map(m => m.personId)])
+  const rows = [...ids].map(id => ({id, person:data.people.find(p => p.id === id), relation:data.relations.find(r => r.personId === id), last:data.messages.filter(m => m.personId === id).sort((a,b) => b.createdAt.localeCompare(a.createdAt))[0]})).filter(r => r.person).sort((a,b) => (b.last?.createdAt || b.relation?.since || '').localeCompare(a.last?.createdAt || a.relation?.since || ''))
+  return <section className="screen messages-screen"><header className="page-header"><h1>消息</h1><Icon name="chat" size={25}/></header>
+    <div className="threads">{rows.map(({id,person,last,relation}) => <button type="button" className={`thread${relation?.status === 'ended' ? ' is-ended' : ''}`} key={id} onClick={() => navigate(`/chat/${id}`)}><PersonAvatar id={id}/><span className="thread-body"><span className="thread-top"><strong>{person!.name}</strong>{last && <time>{formatWhen(last.createdAt).replace('今天 ', '')}</time>}</span><span className="thread-excerpt">{last ? `${last.from === 'me' ? '我：' : ''}${last.text || '[照片]'}` : '还没有消息'}</span></span></button>)}</div>
+    {!rows.length && <div className="empty-state"><p>还没有消息</p><button type="button" className="small-button" onClick={() => navigate('/home')}>去认识朋友</button></div>}
+  </section>
 }

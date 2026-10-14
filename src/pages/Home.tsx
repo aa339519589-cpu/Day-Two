@@ -1,278 +1,46 @@
 import { useNavigate } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { dayKeyFromIso, formatWhen, seatStatus, streakInfo } from '../logic'
+import { dayCount, dayKeyFromIso } from '../logic'
 import { useStore } from '../store'
-import type { Moment, Person, Relation } from '../types'
-import { Avatar, Photo, useTitle } from '../ui'
-
-type Fill =
-  | { kind: 'incoming' | 'outgoing'; person: Person; ended?: false }
-  | { kind: 'suggest'; person: Person; ended: boolean }
-
-function greeting(now: Date) {
-  const h = now.getHours()
-  if (h < 5) return '夜深了'
-  if (h < 11) return '早上好'
-  if (h < 14) return '中午好'
-  if (h < 18) return '下午好'
-  return '晚上好'
-}
-
-function latest(moments: Moment[], authorId: string): Moment | undefined {
-  return [...moments].filter((moment) => moment.authorId === authorId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
-}
-
+import { Photo, useTitle } from '../ui'
+import { Icon, Mark, PersonAvatar } from '../components/Elements'
 export function HomePage() {
   const { data, today, acceptIncoming, declineIncoming, invite, cancelInvite, simulateAccept } = useStore()
   const navigate = useNavigate()
   useTitle(BRAND.name)
-
-  const active = [0, 1, 2].map(
-    (slot) => data.relations.find((rel) => rel.status === 'active' && rel.slot === slot) ?? null,
-  )
-  const queue: Fill[] = []
-  for (const rel of data.relations) {
-    if (rel.status !== 'incoming' && rel.status !== 'outgoing') continue
-    const person = data.people.find((item) => item.id === rel.personId)
-    if (person) queue.push({ kind: rel.status, person })
-  }
-  for (const person of data.people) {
-    const rel = data.relations.find((item) => item.personId === person.id)
-    if (!rel || rel.status === 'ended') queue.push({ kind: 'suggest', person, ended: rel?.status === 'ended' })
-  }
-  const activeCount = active.filter(Boolean).length
-  const emptyCount = 3 - activeCount
-  const placed = queue.slice(0, emptyCount)
-  let cursor = 0
-
-  // 今天有多少人留下了新的东西、或在等你回一句
-  let waiting = 0
-  for (const rel of active) {
-    if (!rel) continue
-    const person = data.people.find((item) => item.id === rel.personId)
-    if (!person) continue
-    const cover = latest(data.moments, person.id)
-    const thread = data.messages.filter((m) => m.personId === person.id)
-    const last = thread[thread.length - 1]
-    const postedToday = cover ? dayKeyFromIso(cover.createdAt) === today : false
-    if (postedToday || last?.from === 'them') waiting += 1
-  }
-
-  return (
-    <div className="home">
-      <header className="home-hero">
-        <p className="home-greeting">
-          {greeting(new Date())}，{data.me.name || '朋友'}
-        </p>
-        {activeCount > 0 ? (
-          <>
-            <h1 className="home-lede">
-              {waiting > 0 ? (
-                <>
-                  有 {waiting} 个人
-                  <br />
-                  在等你说句话
-                </>
-              ) : (
-                <>
-                  今天，
-                  <br />
-                  有人想听你说两句
-                </>
-              )}
-            </h1>
-            <p className="home-sub">不用寒暄，也不必秒回。想说的时候，回应一句，就够了。</p>
-          </>
-        ) : (
-          <>
-            <h1 className="home-lede">
-              三个席位，
-              <br />
-              还留着空位
-            </h1>
-            <p className="home-sub">邀请一个想说得上话的人，把往后的每一天都留给彼此。</p>
-          </>
-        )}
-      </header>
-
-      <div className="seats">
-        {active.map((rel, index) => {
-          if (rel) return <Seat key={rel.personId} rel={rel} today={today} />
-          const fill = placed[cursor]
-          cursor += 1
-          if (!fill) return <Quiet key={index} />
-          return (
-            <OpenSlot
-              key={fill.person.id}
-              fill={fill}
-              onAccept={() => acceptIncoming(fill.person.id)}
-              onDecline={() => declineIncoming(fill.person.id)}
-              onInvite={() => invite(fill.person.id)}
-              onCancel={() => cancelInvite(fill.person.id)}
-              onSimulate={() => simulateAccept(fill.person.id)}
-              onOpen={() => navigate(`/friend/${fill.person.id}`)}
-            />
-          )
-        })}
-      </div>
+  const active = data.relations.filter(r => r.status === 'active').sort((a,b) => (a.slot ?? 0) - (b.slot ?? 0))
+  const candidates = data.people.filter(p => !active.some(r => r.personId === p.id)).slice(0, 3 - active.length)
+  const latest = (id: string) => data.moments.filter(m => m.authorId === id).sort((a,b) => b.createdAt.localeCompare(a.createdAt))[0]
+  const mine = latest('me')
+  const now = new Date()
+  return <section className="home screen">
+    <header className="brand-header"><div className="wordmark"><Mark/><span>第二天</span></div><button type="button" className="icon-button publish-button" aria-label="分享日常" onClick={() => navigate('/compose')}><Icon name="plus"/></button></header>
+    <div className="home-heading"><h1>朋友<span className="seat-count">{active.length}<i>/ 3</i></span></h1><time>{now.getMonth()+1}月{now.getDate()}日</time></div>
+    <div className={`friend-gallery count-${active.length}`}>
+      {active.map(rel => {
+        const person = data.people.find(p => p.id === rel.personId)
+        if (!person) return null
+        const cover = latest(person.id)
+        const fresh = cover && dayKeyFromIso(cover.createdAt) === today
+        return <article key={person.id} className="friend-window">
+          <button type="button" className="friend-portrait" aria-label={`看${person.name}的日常`} onClick={() => navigate(`/feed/${person.id}`)}>
+            <Photo image={cover?.image} alt={cover?.caption || person.name}/>
+            {fresh && <span className="photo-status">今日更新</span>}
+            {cover?.caption && <span className="portrait-caption">{cover.caption}</span>}
+          </button>
+          <div className="friend-caption"><button type="button" className="friend-name" onClick={() => navigate(`/friend/${person.id}`)}><strong>{person.name}</strong><span>认识 {dayCount(rel.since)} 天</span></button><button type="button" className="icon-button" aria-label={`给${person.name}发消息`} onClick={() => navigate(`/chat/${person.id}`)}><Icon name="chat" size={21}/></button></div>
+        </article>
+      })}
     </div>
-  )
-}
-
-function Seat({ rel, today }: { rel: Relation; today: string }) {
-  const { data } = useStore()
-  const navigate = useNavigate()
-  const person = data.people.find((item) => item.id === rel.personId)
-  if (!person) return null
-
-  const cover = latest(data.moments, person.id)
-  const statusLine = seatStatus(rel.since, rel.contract, person.pronoun, today)
-  const streak = rel.contract.status === 'active' ? streakInfo(rel.contract, today) : null
-  const thread = data.messages.filter((m) => m.personId === person.id)
-  const lastMsg = thread[thread.length - 1]
-
-  const postedToday = cover ? dayKeyFromIso(cover.createdAt) === today : false
-  const waitingReply = lastMsg?.from === 'them'
-  const flagText = postedToday ? '今天的新日常' : waitingReply ? '在等你回应' : ''
-
-  const respondTo = cover ? `/chat/${person.id}?moment=${cover.id}` : `/chat/${person.id}`
-
-  const lead = cover?.caption ? `“${cover.caption}”` : lastMsg?.text ? `“${lastMsg.text}”` : person.bio
-
-  const openFeed = () => navigate(`/feed/${person.id}`)
-
-  return (
-    <article className={`seat-card${flagText ? ' is-fresh' : ''}`}>
-      <button type="button" className="seat-cover" onClick={openFeed}>
-        <Photo image={cover?.image} alt={person.name} />
-        {flagText && <span className="seat-flag">{flagText}</span>}
-        {cover && <span className="seat-cover-time">{formatWhen(cover.createdAt)}</span>}
-      </button>
-
-      <div className="seat-foot">
-        <div className="seat-id">
-          <Avatar initial={person.initial} tint={person.tint} />
-          <div className="seat-id-text">
-            <strong>{person.name}</strong>
-            <span>
-              {statusLine}
-              {streak && streak.days > 0 ? ` · 已连续 ${streak.days} 天` : ''}
-            </span>
-          </div>
-        </div>
-
-        <p className="seat-lead">{lead}</p>
-
-        <div className="seat-cta">
-          <button type="button" className="btn btn-respond" onClick={() => navigate(respondTo)}>
-            回应{person.name}
-          </button>
-          <button type="button" className="seat-more" onClick={() => navigate(`/friend/${person.id}`)}>
-            关系
-          </button>
-        </div>
+    {candidates.map(person => {
+      const rel = data.relations.find(r => r.personId === person.id)
+      const incoming = rel?.status === 'incoming'
+      const outgoing = rel?.status === 'outgoing'
+      return <div className="invitation" key={person.id}>
+        <button type="button" className="invitation-person" onClick={() => navigate(`/friend/${person.id}`)}><PersonAvatar id={person.id}/><span><strong>{person.name}</strong><small>{incoming ? '想和你成为朋友' : outgoing ? '邀请已发出' : person.city}</small></span></button>
+        <div className="invitation-actions">{incoming ? <><button type="button" className="icon-button muted" aria-label={`婉拒${person.name}`} onClick={() => declineIncoming(person.id)}><Icon name="close" size={18}/></button><button type="button" className="small-button" onClick={() => acceptIncoming(person.id)}>接受</button></> : outgoing ? <><button type="button" className="text-button" onClick={() => cancelInvite(person.id)}>撤回</button><button type="button" className="small-button" onClick={() => simulateAccept(person.id)}>模拟同意</button></> : <button type="button" className="small-button" onClick={() => invite(person.id)}>邀请</button>}</div>
       </div>
-    </article>
-  )
-}
-
-function Quiet() {
-  return (
-    <article className="quiet-seat">
-      <p className="quiet-title">这里还留着空位</p>
-      <p className="fine">不必急着填满，留给那个你想认真说话的人。</p>
-    </article>
-  )
-}
-
-function OpenSlot({
-  fill,
-  onAccept,
-  onDecline,
-  onInvite,
-  onCancel,
-  onSimulate,
-  onOpen,
-}: {
-  fill: Fill
-  onAccept: () => void
-  onDecline: () => void
-  onInvite: () => void
-  onCancel: () => void
-  onSimulate: () => void
-  onOpen: () => void
-}) {
-  const { person } = fill
-  const tagText =
-    fill.kind === 'incoming'
-      ? '收到一个席位邀请'
-      : fill.kind === 'outgoing'
-        ? '邀请已发出 · 等对方回应'
-        : fill.ended
-          ? '曾经同席 · 可以再邀一次'
-          : '席位空着 · 可以邀请'
-
-  return (
-    <article className={`open-seat kind-${fill.kind}`}>
-      <span className="open-seat-tag">{tagText}</span>
-
-      <div className="open-seat-main" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen() }}>
-        <Avatar initial={person.initial} tint={person.tint} large />
-        <div className="open-seat-copy">
-          <div className="seat-title-line">
-            <h2 className="seat-name">{person.name}</h2>
-            <span className="seat-city">
-              {person.city} · {person.languages.join(' / ')}
-            </span>
-          </div>
-          <p className="open-bio">{person.bio}</p>
-          {person.interests.length > 0 && (
-            <div className="interest-inline">
-              {person.interests.map((item) => (
-                <span key={item} className="tag-chip">
-                  {item}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="seat-actions">
-        {fill.kind === 'incoming' && (
-          <>
-            <button type="button" className="btn-compact primary" onClick={onAccept}>
-              接受邀请
-            </button>
-            <button type="button" className="btn-compact" onClick={onDecline}>
-              婉拒
-            </button>
-            <button type="button" className="btn-compact subtle" onClick={onOpen}>
-              先看看{person.pronoun}
-            </button>
-          </>
-        )}
-        {fill.kind === 'outgoing' && (
-          <>
-            <button type="button" className="btn-compact primary" onClick={onSimulate}>
-              模拟对方同意
-            </button>
-            <button type="button" className="btn-compact" onClick={onCancel}>
-              撤回邀请
-            </button>
-          </>
-        )}
-        {fill.kind === 'suggest' && (
-          <>
-            <button type="button" className="btn-compact primary" onClick={onInvite}>
-              邀请入席
-            </button>
-            <button type="button" className="btn-compact subtle" onClick={onOpen}>
-              先了解{person.pronoun}
-            </button>
-          </>
-        )}
-      </div>
-    </article>
-  )
+    })}
+    <div className="my-today"><button type="button" className="my-today-preview" onClick={() => navigate('/feed/me')}><span className="today-mini"><Photo image={mine?.image} alt=""/></span><span><strong>我的日常</strong><small>{mine && dayKeyFromIso(mine.createdAt) === today ? '今天已分享' : '今天'}</small></span></button><button className="icon-button" type="button" aria-label="添加日常照片" onClick={() => navigate('/compose')}><Icon name="camera"/></button></div>
+  </section>
 }
