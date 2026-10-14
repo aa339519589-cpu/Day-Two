@@ -49,7 +49,6 @@ export function ComposePage() {
         <header className="topbar compose-topbar">
           <Back fallback="/daily" />
           <div className="grow">
-            <span className="eyebrow" style={{ margin: 0 }}>NEW MOMENT</span>
             <h1>记下今天</h1>
           </div>
           {file && (

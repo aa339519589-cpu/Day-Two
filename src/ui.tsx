@@ -291,7 +291,7 @@ export function FitViewport({ children }: { children: ReactNode }) {
     }
   }, [])
   return (
-    <div ref={ref} className="stack">
+    <div ref={ref} className="stack fit-viewport">
       {children}
     </div>
   )

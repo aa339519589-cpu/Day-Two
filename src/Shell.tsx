@@ -5,7 +5,7 @@ const items = [
   { to: '/home', label: '席位', icon: IconHome },
   { to: '/daily', label: '日常', icon: IconDaily },
   { to: '/messages', label: '来往', icon: IconChat },
-  { to: '/me', label: '档案', icon: IconMe },
+  { to: '/me', label: '我的', icon: IconMe },
 ]
 
 export function Shell() {

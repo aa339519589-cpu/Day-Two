@@ -18,7 +18,6 @@ export function FriendPage() {
   if (!person) {
     return (
       <div className="stack page">
-        <p className="eyebrow">NOT FOUND</p>
         <h1>没有这个人</h1>
         <button type="button" className="btn" style={{ marginTop: 20 }} onClick={() => navigate('/home')}>
           回席位
@@ -140,7 +139,7 @@ export function FriendPage() {
           <Avatar initial={person.initial} tint={person.tint} large />
           <div className="cover-text">
             <span className="cover-kicker">
-              SEAT 0{(relation.slot ?? 0) + 1} · 第 {totalDays} 天
+              已经一起走到第 {totalDays} 天
             </span>
             <h1>{person.name}</h1>
             <p>
@@ -175,7 +174,6 @@ export function FriendPage() {
       <section className="contract">
         <div className="contract-head">
           <div>
-            <span className="eyebrow">DAILY PACT</span>
             <h2>每日约定</h2>
           </div>
           {(contract.status === 'active' || contract.status === 'paused') && (

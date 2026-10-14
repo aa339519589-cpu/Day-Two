@@ -31,7 +31,6 @@ export function ChatPage() {
   if (!person) {
     return (
       <div className="stack page">
-        <p className="eyebrow">NOT FOUND</p>
         <h1>没有这个对话</h1>
         <button type="button" className="btn" style={{ marginTop: 20 }} onClick={() => navigate('/messages')}>
           回消息列表

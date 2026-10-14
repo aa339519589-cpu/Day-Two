@@ -191,7 +191,6 @@ export function FeedPage() {
   if (!isMe && !person) {
     return (
       <div className="stack page">
-        <p className="eyebrow">NOT FOUND</p>
         <h1>没有这个人</h1>
         <button type="button" className="btn" style={{ marginTop: 20 }} onClick={() => navigate('/home')}>
           回席位
@@ -203,9 +202,8 @@ export function FeedPage() {
   if (blocked) {
     return (
       <div className="stack page">
-        <p className="eyebrow">ARCHIVE</p>
         <h1>{person?.name}</h1>
-        <p className="lede">你们目前不在彼此的席位中，仍可翻阅过往的聊天记录。</p>
+        <p className="lede">你们目前不在彼此的席位中，不过过往说过的话，仍然留着。</p>
         <button type="button" className="btn" style={{ marginTop: 24 }} onClick={() => navigate(`/chat/${personId}`)}>
           查看聊天记录
         </button>
@@ -231,7 +229,7 @@ export function FeedPage() {
           >
             <IconBack />
           </button>
-          <p className="eyebrow">DAILY ARCHIVE</p>
+          <p className="eyebrow">{isMe ? '你的日常' : `${name} 的日常`}</p>
           <h2>{isMe ? '还没有记下日常' : `${name}还没有日常`}</h2>
           {isMe && (
             <button type="button" className="btn light-ink" style={{ marginTop: 18 }} onClick={() => navigate('/compose')}>

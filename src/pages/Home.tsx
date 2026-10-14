@@ -1,15 +1,26 @@
 import { useNavigate } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { formatWhen, seatStatus, streakInfo } from '../logic'
+import { dayKeyFromIso, formatWhen, seatStatus, streakInfo } from '../logic'
 import { useStore } from '../store'
-import type { Person, Relation } from '../types'
+import type { Moment, Person, Relation } from '../types'
 import { Avatar, Photo, useTitle } from '../ui'
 
 type Fill =
   | { kind: 'incoming' | 'outgoing'; person: Person; ended?: false }
   | { kind: 'suggest'; person: Person; ended: boolean }
 
-const ROMAN = ['01', '02', '03']
+function greeting(now: Date) {
+  const h = now.getHours()
+  if (h < 5) return '夜深了'
+  if (h < 11) return '早上好'
+  if (h < 14) return '中午好'
+  if (h < 18) return '下午好'
+  return '晚上好'
+}
+
+function latest(moments: Moment[], authorId: string): Moment | undefined {
+  return [...moments].filter((moment) => moment.authorId === authorId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
+}
 
 export function HomePage() {
   const { data, today, acceptIncoming, declineIncoming, invite, cancelInvite, simulateAccept } = useStore()
@@ -34,32 +45,65 @@ export function HomePage() {
   const placed = queue.slice(0, emptyCount)
   let cursor = 0
 
+  // 今天有多少人留下了新的东西、或在等你回一句
+  let waiting = 0
+  for (const rel of active) {
+    if (!rel) continue
+    const person = data.people.find((item) => item.id === rel.personId)
+    if (!person) continue
+    const cover = latest(data.moments, person.id)
+    const thread = data.messages.filter((m) => m.personId === person.id)
+    const last = thread[thread.length - 1]
+    const postedToday = cover ? dayKeyFromIso(cover.createdAt) === today : false
+    if (postedToday || last?.from === 'them') waiting += 1
+  }
+
   return (
     <div className="home">
-      <header className="home-masthead">
-        <div className="home-masthead-top">
-          <span className="eyebrow">{BRAND.name.toUpperCase()} · THREE SEATS</span>
-          <span className="seat-occupancy">{activeCount} / 3 席在位</span>
-        </div>
-        <div className="home-masthead-main">
-          <h1>三个席位</h1>
-          <p className="home-tagline">{BRAND.tagline}</p>
-        </div>
+      <header className="home-hero">
+        <p className="home-greeting">
+          {greeting(new Date())}，{data.me.name || '朋友'}
+        </p>
+        {activeCount > 0 ? (
+          <>
+            <h1 className="home-lede">
+              {waiting > 0 ? (
+                <>
+                  有 {waiting} 个人
+                  <br />
+                  在等你说句话
+                </>
+              ) : (
+                <>
+                  今天，
+                  <br />
+                  有人想听你说两句
+                </>
+              )}
+            </h1>
+            <p className="home-sub">不用寒暄，也不必秒回。想说的时候，回应一句，就够了。</p>
+          </>
+        ) : (
+          <>
+            <h1 className="home-lede">
+              三个席位，
+              <br />
+              还留着空位
+            </h1>
+            <p className="home-sub">邀请一个想说得上话的人，把往后的每一天都留给彼此。</p>
+          </>
+        )}
       </header>
 
       <div className="seats">
         {active.map((rel, index) => {
-          const slotLabel = ROMAN[index] ?? `0${index + 1}`
-          if (rel) {
-            return <Seat key={rel.personId} rel={rel} slotLabel={slotLabel} today={today} />
-          }
+          if (rel) return <Seat key={rel.personId} rel={rel} today={today} />
           const fill = placed[cursor]
           cursor += 1
-          if (!fill) return <Quiet key={index} slotLabel={slotLabel} />
+          if (!fill) return <Quiet key={index} />
           return (
             <OpenSlot
               key={fill.person.id}
-              slotLabel={slotLabel}
               fill={fill}
               onAccept={() => acceptIncoming(fill.person.id)}
               onDecline={() => declineIncoming(fill.person.id)}
@@ -75,7 +119,7 @@ export function HomePage() {
   )
 }
 
-function Seat({ rel, slotLabel, today }: { rel: Relation; slotLabel: string; today: string }) {
+function Seat({ rel, today }: { rel: Relation; today: string }) {
   const { data } = useStore()
   const navigate = useNavigate()
   const person = data.people.find((item) => item.id === rel.personId)
@@ -87,82 +131,61 @@ function Seat({ rel, slotLabel, today }: { rel: Relation; slotLabel: string; tod
   const thread = data.messages.filter((m) => m.personId === person.id)
   const lastMsg = thread[thread.length - 1]
 
-  return (
-    <article className="seat-row active-seat">
-      <div className="seat-header">
-        <span className="seat-index">SEAT {slotLabel}</span>
-        <span className="seat-status-pill">
-          <span className={`status-dot${streak?.todayPeer ? ' live' : ''}`} />
-          {statusLine}
-          {streak && streak.days > 0 ? ` · 连续 ${streak.days} 天` : ''}
-        </span>
-      </div>
+  const postedToday = cover ? dayKeyFromIso(cover.createdAt) === today : false
+  const waitingReply = lastMsg?.from === 'them'
+  const flagText = postedToday ? '今天的新日常' : waitingReply ? '在等你回应' : ''
 
-      <div className="seat-body" onClick={() => navigate(`/friend/${person.id}`)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/friend/${person.id}`) }}>
-        <div className="seat-visual">
-          <Photo image={cover?.image} alt={person.name} />
-          {cover && <span className="seat-photo-time">{formatWhen(cover.createdAt)}</span>}
+  const respondTo = cover ? `/chat/${person.id}?moment=${cover.id}` : `/chat/${person.id}`
+
+  const lead = cover?.caption ? `“${cover.caption}”` : lastMsg?.text ? `“${lastMsg.text}”` : person.bio
+
+  const openFeed = () => navigate(`/feed/${person.id}`)
+
+  return (
+    <article className={`seat-card${flagText ? ' is-fresh' : ''}`}>
+      <button type="button" className="seat-cover" onClick={openFeed}>
+        <Photo image={cover?.image} alt={person.name} />
+        {flagText && <span className="seat-flag">{flagText}</span>}
+        {cover && <span className="seat-cover-time">{formatWhen(cover.createdAt)}</span>}
+      </button>
+
+      <div className="seat-foot">
+        <div className="seat-id">
+          <Avatar initial={person.initial} tint={person.tint} />
+          <div className="seat-id-text">
+            <strong>{person.name}</strong>
+            <span>
+              {statusLine}
+              {streak && streak.days > 0 ? ` · 已连续 ${streak.days} 天` : ''}
+            </span>
+          </div>
         </div>
 
-        <div className="seat-info">
-          <div className="seat-title-line">
-            <h2 className="seat-name">{person.name}</h2>
-            <span className="seat-city">{person.city}</span>
-          </div>
+        <p className="seat-lead">{lead}</p>
 
-          {cover?.caption ? (
-            <p className="seat-excerpt">“{cover.caption}”</p>
-          ) : (
-            <p className="seat-excerpt">{person.bio}</p>
-          )}
-
-          {lastMsg && (
-            <div className="seat-last-msg">
-              <span className="msg-label">{lastMsg.from === 'me' ? '我' : person.pronoun}：</span>
-              <span className="msg-preview">{lastMsg.text || '分享了一张照片'}</span>
-            </div>
-          )}
-
-          <div className="seat-quick-bar" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="seat-link" onClick={() => navigate(`/feed/${person.id}`)}>
-              看日常
-            </button>
-            <span className="sep">·</span>
-            <button type="button" className="seat-link" onClick={() => navigate(`/chat/${person.id}`)}>
-              去对话
-            </button>
-            <span className="sep">·</span>
-            <button type="button" className="seat-link muted" onClick={() => navigate(`/friend/${person.id}`)}>
-              关系档案
-            </button>
-          </div>
+        <div className="seat-cta">
+          <button type="button" className="btn btn-respond" onClick={() => navigate(respondTo)}>
+            回应{person.name}
+          </button>
+          <button type="button" className="seat-more" onClick={() => navigate(`/friend/${person.id}`)}>
+            关系
+          </button>
         </div>
       </div>
     </article>
   )
 }
 
-function latest(moments: { authorId: string; createdAt: string; image: string; caption?: string }[], authorId: string) {
-  return [...moments].filter((moment) => moment.authorId === authorId).sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0]
-}
-
-function Quiet({ slotLabel }: { slotLabel: string }) {
+function Quiet() {
   return (
-    <article className="seat-row quiet-seat">
-      <div className="seat-header">
-        <span className="seat-index">SEAT {slotLabel}</span>
-        <span className="seat-status-pill">空置</span>
-      </div>
-      <div className="quiet-inner">
-        <p className="quiet-title">留白席位</p>
-        <p className="fine">不必急着填满，留给想认真说话的人。</p>
-      </div>
+    <article className="quiet-seat">
+      <p className="quiet-title">这里还留着空位</p>
+      <p className="fine">不必急着填满，留给那个你想认真说话的人。</p>
     </article>
   )
 }
 
 function OpenSlot({
-  slotLabel,
   fill,
   onAccept,
   onDecline,
@@ -171,7 +194,6 @@ function OpenSlot({
   onSimulate,
   onOpen,
 }: {
-  slotLabel: string
   fill: Fill
   onAccept: () => void
   onDecline: () => void
@@ -183,19 +205,16 @@ function OpenSlot({
   const { person } = fill
   const tagText =
     fill.kind === 'incoming'
-      ? '收到席位邀请'
+      ? '收到一个席位邀请'
       : fill.kind === 'outgoing'
-        ? '邀请已发出 · 等待回应'
+        ? '邀请已发出 · 等对方回应'
         : fill.ended
-          ? '曾同席 · 可再次邀请'
-          : '席位空缺 · 候选人'
+          ? '曾经同席 · 可以再邀一次'
+          : '席位空着 · 可以邀请'
 
   return (
-    <article className={`seat-row open-seat kind-${fill.kind}`}>
-      <div className="seat-header">
-        <span className="seat-index">SEAT {slotLabel}</span>
-        <span className="seat-status-pill">{tagText}</span>
-      </div>
+    <article className={`open-seat kind-${fill.kind}`}>
+      <span className="open-seat-tag">{tagText}</span>
 
       <div className="open-seat-main" onClick={onOpen} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter') onOpen() }}>
         <Avatar initial={person.initial} tint={person.tint} large />
@@ -223,20 +242,20 @@ function OpenSlot({
         {fill.kind === 'incoming' && (
           <>
             <button type="button" className="btn-compact primary" onClick={onAccept}>
-              接受席位
+              接受邀请
             </button>
             <button type="button" className="btn-compact" onClick={onDecline}>
               婉拒
             </button>
             <button type="button" className="btn-compact subtle" onClick={onOpen}>
-              查看资料
+              先看看{person.pronoun}
             </button>
           </>
         )}
         {fill.kind === 'outgoing' && (
           <>
             <button type="button" className="btn-compact primary" onClick={onSimulate}>
-              对方同意
+              模拟对方同意
             </button>
             <button type="button" className="btn-compact" onClick={onCancel}>
               撤回邀请
@@ -249,7 +268,7 @@ function OpenSlot({
               邀请入席
             </button>
             <button type="button" className="btn-compact subtle" onClick={onOpen}>
-              了解{person.pronoun}
+              先了解{person.pronoun}
             </button>
           </>
         )}

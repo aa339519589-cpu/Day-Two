@@ -55,9 +55,8 @@ export function ProfilePage() {
   return (
     <div className="screen profile-screen">
       <header className="page-masthead">
-        <span className="eyebrow">PERSONAL DOSSIER</span>
         <div className="masthead-row">
-          <h1>个人档案</h1>
+          <h1>我的</h1>
           <button
             type="button"
             className="masthead-btn"
@@ -201,32 +200,36 @@ export function ProfilePage() {
         </div>
       </section>
 
-      <section className="settings-section">
-        <div className="group-caption">系统与数据</div>
-        <div className="ios-list">
-          {installEvent && (
-            <button
-              type="button"
-              className="ios-row"
-              onClick={() => {
-                void installEvent.prompt()
-                setInstallEvent(null)
-              }}
-            >
-              <span className="row-title">添加到主屏幕</span>
-              <span className="row-trail">
-                <IconChevronRight />
-              </span>
-            </button>
-          )}
-          <button type="button" className="ios-row destructive" onClick={() => setAskReset(true)}>
-            <span className="row-title">重置演示数据</span>
-            <span className="row-trail">
-              <span>恢复初始状态</span>
-            </span>
-          </button>
-        </div>
-      </section>
+      {(installEvent || import.meta.env.DEV) && (
+        <section className="settings-section">
+          <div className="group-caption">系统与数据</div>
+          <div className="ios-list">
+            {installEvent && (
+              <button
+                type="button"
+                className="ios-row"
+                onClick={() => {
+                  void installEvent.prompt()
+                  setInstallEvent(null)
+                }}
+              >
+                <span className="row-title">添加到主屏幕</span>
+                <span className="row-trail">
+                  <IconChevronRight />
+                </span>
+              </button>
+            )}
+            {import.meta.env.DEV && (
+              <button type="button" className="ios-row destructive" onClick={() => setAskReset(true)}>
+                <span className="row-title">重置演示数据</span>
+                <span className="row-trail">
+                  <span>恢复初始状态</span>
+                </span>
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
       {askReset && (
         <Dialog

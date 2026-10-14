@@ -31,14 +31,14 @@ export function MessagesPage() {
   return (
     <div className="screen messages-screen">
       <header className="page-masthead">
-        <span className="eyebrow">CORRESPONDENCE</span>
         <h1>来往</h1>
+        <p className="masthead-sub">你与席位里那些人的对话，都收在这里。</p>
       </header>
 
       {rows.length === 0 ? (
         <div className="empty-panel">
-          <p className="serif">还没有信件往来</p>
-          <span className="fine">当你在席位中与朋友开始交谈，对话会留在这里。</span>
+          <p className="serif">还没有说过的话</p>
+          <span className="fine">当你在席位里跟谁开了口，对话就会留在这里。</span>
         </div>
       ) : (
         <div className="threads">

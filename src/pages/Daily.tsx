@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BRAND } from '../brand'
 import { useImage } from '../images'
@@ -23,7 +23,11 @@ export function DailyPage() {
 
   const [filterId, setFilterId] = useState<string>('all')
   const [immersive, setImmersive] = useState(false)
+  const [hint, setHint] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const idleRef = useRef<number | undefined>(undefined)
+  const immersiveRef = useRef(false)
+  const hintedRef = useRef(false)
 
   const allowedAuthors = useMemo(() => {
     const set = new Set<string>(['me'])
@@ -56,10 +60,32 @@ export function DailyPage() {
     setIndex(0)
   }, [filterId])
 
+  const scheduleHide = useCallback(() => {
+    window.clearTimeout(idleRef.current)
+    idleRef.current = window.setTimeout(() => setImmersive(true), 3400)
+  }, [])
+
   useEffect(() => {
     document.documentElement.classList.toggle('immersive-reel', immersive)
-    return () => document.documentElement.classList.remove('immersive-reel')
-  }, [immersive])
+    immersiveRef.current = immersive
+    if (immersive) {
+      window.clearTimeout(idleRef.current)
+    } else {
+      scheduleHide()
+    }
+    return () => window.clearTimeout(idleRef.current)
+  }, [immersive, scheduleHide])
+
+  useEffect(() => () => document.documentElement.classList.remove('immersive-reel'), [])
+
+  useEffect(() => {
+    if (immersive && !hintedRef.current && list.length > 0) {
+      hintedRef.current = true
+      setHint(true)
+      const t = window.setTimeout(() => setHint(false), 3200)
+      return () => window.clearTimeout(t)
+    }
+  }, [immersive, list.length])
 
   useLayoutEffect(() => {
     const reel = reelRef.current
@@ -73,6 +99,7 @@ export function DailyPage() {
     const count = listRef.current.length
     const current = indexRef.current
     if (anim.current) return
+    if (!immersiveRef.current) scheduleHide()
     const next = current + dir
     const stage = stageRef.current
     const reel = reelRef.current
@@ -268,7 +295,7 @@ export function DailyPage() {
 
       {list.length === 0 ? (
         <div className="reel-empty">
-          <p className="eyebrow">DAILY ARCHIVE</p>
+          <p className="eyebrow">今天的日常</p>
           <h2>还没有留下的日常</h2>
           <p className="fine">今天看到的某个瞬间，随时可以放进这里。</p>
           <button type="button" className="btn light-ink" onClick={() => navigate('/compose')}>
@@ -283,8 +310,10 @@ export function DailyPage() {
             {next ? <Slide moment={next} place="next" /> : <div className="slide next" />}
           </div>
 
+          {hint && <div className="reel-hint" aria-hidden>轻触屏幕 · 显示操作</div>}
+
           {current && author && (
-            <footer className="feed-bottom">
+            <footer className="feed-bottom daily-bottom">
               <div className="feed-editorial">
                 <div className="feed-author-row">
                   <button

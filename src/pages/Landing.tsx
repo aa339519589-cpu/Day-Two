@@ -32,8 +32,8 @@ export function LandingPage() {
       <div className="gate-veil" />
 
       <header className="gate-top">
-        <span className="gate-brand">{BRAND.name.toUpperCase()}</span>
-        <span className="gate-issue">THREE SEATS · INTIMATE ARCHIVE</span>
+        <span className="gate-brand">{BRAND.name}</span>
+        <span className="gate-issue">给三个想继续说话的人</span>
       </header>
 
       <div className="gate-copy">
