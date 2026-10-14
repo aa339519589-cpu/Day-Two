@@ -1,15 +1,16 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { BRAND } from '../brand'
-import { formatWhen, seatStatus } from '../logic'
+import { dayCount, formatWhen } from '../logic'
 import { useStore } from '../store'
-import { Avatar, Back, Dialog, FitViewport, IconClose, IconImage, LockScroll, Photo, useTitle } from '../ui'
+import { FitViewport, IconClose, IconImage, LockScroll, Photo, useTitle } from '../ui'
+import { BackButton, Icon, PersonAvatar, Sheet } from '../components/Elements'
 
 export function ChatPage() {
   const { personId = '' } = useParams()
   const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
-  const { data, today, sendText, sendImage, deleteThread } = useStore()
+  const { data, sendText, sendImage, deleteThread } = useStore()
   const person = data.people.find((item) => item.id === personId)
   const relation = data.relations.find((item) => item.personId === personId)
   const messages = data.messages.filter((item) => item.personId === personId)
@@ -43,9 +44,9 @@ export function ChatPage() {
   const canSend = active
   const subtitle =
     relation?.status === 'active'
-      ? seatStatus(relation.since, relation.contract, person.pronoun, today)
+      ? `认识 ${dayCount(relation.since)} 天`
       : relation?.status === 'ended'
-        ? '关系已结束 · 历史存档'
+        ? '已结束'
         : person.city
 
   const submit = () => {
@@ -59,22 +60,20 @@ export function ChatPage() {
     <FitViewport>
       <LockScroll />
       <header className="topbar chat-topbar">
-        <Back fallback="/messages" />
+        <BackButton to="/messages" />
         <button
           type="button"
           className="chat-peer-head"
           onClick={() => navigate(`/friend/${person.id}`)}
         >
-          <Avatar initial={person.initial} tint={person.tint} />
+          <PersonAvatar id={person.id} size="small" />
           <div className="chat-peer-meta">
             <h1>{person.name}</h1>
             <p>{subtitle}</p>
           </div>
         </button>
         {messages.length > 0 && (
-          <button type="button" className="topbar-action" onClick={() => setAskDelete(true)}>
-            清空
-          </button>
+          <button type="button" className="icon-button" aria-label="聊天选项" onClick={() => setAskDelete(true)}><Icon name="more"/></button>
         )}
       </header>
 
@@ -83,7 +82,7 @@ export function ChatPage() {
           {messages.length === 0 ? (
             <div className="chat-empty-note">
               <p className="serif">与 {person.name} 的对话</p>
-              <span>不急着寒暄，想说什么的时候再开口。</span>
+              
             </div>
           ) : (
             messages.map((message, index) => {
@@ -164,7 +163,7 @@ export function ChatPage() {
         </div>
       )}
 
-      {error && <p className="error">{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
 
       {canSend ? (
         <form
@@ -174,7 +173,7 @@ export function ChatPage() {
             submit()
           }}
         >
-          <label className="icon-btn file-hit composer-media" aria-label="发送照片">
+          <label className="icon-button file-hit composer-media" aria-label="发送照片">
             <IconImage />
             <input
               type="file"
@@ -198,21 +197,20 @@ export function ChatPage() {
             type="text"
             value={text}
             maxLength={500}
-            placeholder={`写给 ${person.name}…`}
+            placeholder="消息…"
             aria-label="消息"
             onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => { if (event.key === 'Enter' && (event.nativeEvent.isComposing || event.keyCode === 229)) event.preventDefault() }}
           />
-          <button className="send" type="submit" disabled={!text.trim() || busy}>
-            发送
-          </button>
+          <button className="send" type="submit" aria-label="发送" disabled={!text.trim() || busy}><Icon name="arrow" size={20}/></button>
         </form>
       ) : (
         <div className="ended-bar">
           <div className="ended-bar-inner">
-            <span>你们当前不在彼此的席位中</span>
+            <span>当前不能发送消息</span>
             <div className="ended-bar-actions">
               <Link to={relation?.status === 'ended' ? `/friend/${personId}` : '/home'} className="ended-link">
-                {relation?.status === 'ended' ? '查看这段关系' : '返回席位'}
+                {relation?.status === 'ended' ? '查看资料' : '返回朋友'}
               </Link>
               {messages.length > 0 && (
                 <button type="button" className="ended-delete" onClick={() => setAskDelete(true)}>
@@ -224,19 +222,7 @@ export function ChatPage() {
         </div>
       )}
 
-      {askDelete && (
-        <Dialog
-          title="删除聊天记录"
-          body={`确定清空与 ${person.name} 的全部对话记录吗？`}
-          confirm="删除"
-          danger
-          onClose={() => setAskDelete(false)}
-          onConfirm={() => {
-            deleteThread(personId)
-            setAskDelete(false)
-          }}
-        />
-      )}
+      {askDelete && <Sheet title="聊天记录" onClose={() => setAskDelete(false)}><p className="sheet-note">删除后无法恢复。</p><button type="button" className="settings-row danger-text" onClick={() => {deleteThread(personId);setAskDelete(false)}}>删除全部聊天记录</button></Sheet>}
       {lightbox && <Lightbox image={lightbox} onClose={() => setLightbox(null)} />}
     </FitViewport>
   )

@@ -1,0 +1,63 @@
+name: Frontend check
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Install browser test tools
+        run: |
+          npm install --no-save --package-lock=false @playwright/test@1.57.0
+          npx playwright install --with-deps chromium webkit
+      - name: Test frontend
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/day-two-preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4173 >/dev/null && break; sleep 1; done
+          node scripts/ui-smoke.mjs
+      - name: Check public deployment
+        if: github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: |
+          python3 - <<'PY'
+          import datetime,json,os,pathlib,re,time,urllib.request
+          origin='https://day-two-6tjd.onrender.com'
+          assets=lambda text: sorted(set(re.findall(r'/assets/index-[A-Za-z0-9_-]+\.(?:js|css)',text)))
+          expected=assets(pathlib.Path('dist/index.html').read_text())
+          assert expected
+          report={'url':origin,'commit':os.environ['GITHUB_SHA'],'expected':expected,'matched':False}
+          for attempt in range(8):
+              try:
+                  req=urllib.request.Request(origin+'/?frontend-check='+os.environ['GITHUB_SHA']+'&attempt='+str(attempt),headers={'Cache-Control':'no-cache','User-Agent':'DayTwo-Deployment-Check'})
+                  with urllib.request.urlopen(req,timeout=15) as response:
+                      body=response.read().decode('utf-8'); report['httpStatus']=response.status
+                  report['served']=assets(body)
+                  report['matched']=expected==report['served']
+                  report.pop('error',None)
+                  if report['matched']: break
+              except Exception as error: report['error']=str(error)
+              if attempt<7: time.sleep(10)
+          report['checkedAt']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+          pathlib.Path('ui-artifacts').mkdir(exist_ok=True)
+          pathlib.Path('ui-artifacts/deployment.json').write_text(json.dumps(report,indent=2))
+          print(json.dumps(report,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-review
+          path: ui-artifacts/
+          retention-days: 7

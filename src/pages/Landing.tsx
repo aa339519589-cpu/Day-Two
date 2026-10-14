@@ -1,81 +1,16 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { BRAND } from '../brand'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useStore } from '../store'
-import { fallbackPhoto, useTitle } from '../ui'
-
+import { Photo, useTitle } from '../ui'
+import { Mark, Icon } from '../components/Elements'
 export function LandingPage() {
   const { data, onboard } = useStore()
   const navigate = useNavigate()
-  const [open, setOpen] = useState(false)
-  const [name, setName] = useState(data.me.name || '阿南')
-  useTitle(BRAND.name)
-
-  const enter = () => {
-    if (data.onboarded) {
-      navigate('/home')
-      return
-    }
-    setOpen(true)
-  }
-
-  return (
-    <div className="device gate">
-      <img
-        src="/photos/hero.jpg"
-        alt=""
-        onError={(e) => {
-          const fb = fallbackPhoto('hero')
-          if (e.currentTarget.src !== fb) e.currentTarget.src = fb
-        }}
-      />
-      <div className="gate-veil" />
-
-      <header className="gate-top">
-        <span className="gate-brand">{BRAND.name}</span>
-        <span className="gate-issue">给三个想继续说话的人</span>
-      </header>
-
-      <div className="gate-copy">
-        <p className="gate-kicker">{BRAND.tagline}</p>
-        <h1>
-          第二天，
-          <br />
-          还想说话。
-        </h1>
-        <p className="gate-desc">
-          只留三个席位。没有信息流广场，没有点赞计数，只把今天发生的一点小事留给真正在意的人。
-        </p>
-
-        {open && !data.onboarded ? (
-          <form
-            className="gate-form"
-            onSubmit={(event) => {
-              event.preventDefault()
-              const trimmed = name.trim()
-              if (!trimmed) return
-              onboard(trimmed)
-              navigate('/home')
-            }}
-          >
-            <input
-              value={name}
-              maxLength={16}
-              placeholder="朋友怎么称呼你？"
-              aria-label="你的名字"
-              onChange={(event) => setName(event.target.value)}
-              autoFocus
-            />
-            <button className="btn gate-submit" type="submit" disabled={!name.trim()}>
-              进入
-            </button>
-          </form>
-        ) : (
-          <button type="button" className="btn gate-enter" onClick={enter}>
-            {data.onboarded ? '进入席位' : '开始使用'}
-          </button>
-        )}
-      </div>
-    </div>
-  )
+  const [name,setName] = useState('')
+  useTitle('第二天 · Day Two')
+  if (data.onboarded) return <Navigate to="/home" replace/>
+  return <main className="gate"><Photo image="/photos/hero.jpg" alt="窗边的日常"/><span className="gate-shade"/>
+    <header className="gate-brand"><Mark/><span>Day Two</span></header>
+    <div className="gate-content"><h1>第二天<span>还想见你。</span></h1><form className="gate-form" onSubmit={e => {e.preventDefault(); if (name.trim()) {onboard(name);navigate('/home')}}}><label className="sr-only" htmlFor="welcome-name">你的名字</label><input id="welcome-name" value={name} onChange={e => setName(e.target.value)} maxLength={16} placeholder="你的名字" autoComplete="nickname"/><button type="submit" disabled={!name.trim()} aria-label="开始体验"><Icon name="arrow"/></button></form><span className="demo-label">本地体验</span></div>
+  </main>
 }
