@@ -1,0 +1,28 @@
+name: Frontend check
+on:
+  push:
+    branches: [main, design/day-two-refinement]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Package frontend verification workspace
+        run: tar -czf frontend-workspace.tgz src public scripts node_modules package.json package-lock.json index.html tsconfig.json vite.config.ts render.yaml README.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-workspace
+          path: frontend-workspace.tgz
+          retention-days: 1
