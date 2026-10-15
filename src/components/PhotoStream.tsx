@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store'
 import { dayCount, formatWhen } from '../logic'
 import { LockScroll, Photo, useTitle } from '../ui'
+import { playPhotoOpen } from '../photoOrigin'
 import { BackButton, Icon, PersonAvatar, Sheet } from './Elements'
 
 const REEL_KEY = 'daytwo-reel-position-v1'
@@ -48,6 +49,8 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
   const author = current?.authorId === 'me' ? data.me : data.people.find(p => p.id === current?.authorId)
   const name = personId === 'me' ? '我的日常' : data.people.find(p => p.id === personId)?.name || '日常'
   useTitle(`${name} · Day Two`)
+
+  useLayoutEffect(() => { playPhotoOpen(stage.current) }, [])
 
   useLayoutEffect(() => {
     const node = rail.current
@@ -150,7 +153,7 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
       <button type="button" className="icon-button glass" aria-label="分享日常" onClick={() => navigate('/compose')}><Icon name="camera" size={21}/></button>
     </header>
     {dots.length > 1 && <div className="photo-progress photo-chrome" aria-hidden="true">{dots.map(m => <i key={m.id} className={m.id === current?.id ? 'on' : ''}/>)}</div>}
-    {current && author && <footer className="photo-bottom photo-chrome">
+    {current && author && <footer key={current.id} className="photo-bottom photo-chrome">
       <div className="photo-byline">
         <button type="button" className="photo-author" onClick={() => navigate(current.authorId === 'me' ? '/me' : `/friend/${current.authorId}`)}>
           <PersonAvatar id={current.authorId} size="small" ring/>

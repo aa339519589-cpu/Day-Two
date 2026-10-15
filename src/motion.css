@@ -146,3 +146,17 @@ img[data-loaded] {animation: m-fade .32s var(--ease-std) both}
 .person-avatar.ring {animation: m-waiting 1.6s var(--ease-std) 3}
 /* opening someone's day from the home feed: the photo leans in slightly before the viewer takes over */
 .post .seat-photo:active img {transform: scale(.985); transition-duration: var(--dur-press)}
+
+/* ---------- immersive photo: open + paging rhythm ---------- */
+/* While the viewer grows out of the thumbnail, chrome waits and then settles in. */
+.photo-stage.is-opening .photo-chrome {opacity: 0; transition: none}
+.photo-stage:not(.is-opening) .photo-chrome {transition-delay: 0s}
+/* Paging depth: the photo leaving recedes slightly, the arriving one settles to full size. */
+.photo-slide > img:not(.photo-backdrop) {transition: transform 260ms var(--ease-out), filter 260ms var(--ease-out)}
+.photo-slide[aria-hidden="true"] > img:not(.photo-backdrop) {transform: scale(.965); filter: brightness(.72)}
+/* Caption and author re-enter with each new photo. */
+.photo-bottom > * {animation: m-rise var(--dur-enter) var(--ease-out) both}
+@media (prefers-reduced-motion: reduce) {
+  .photo-slide > img:not(.photo-backdrop) {transition: none}
+  .photo-slide[aria-hidden="true"] > img:not(.photo-backdrop) {transform: none; filter: none}
+}
