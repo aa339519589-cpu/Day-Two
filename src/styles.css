@@ -786,3 +786,14 @@ h1, h2, h3, strong, b {font-weight: 700}
   .shell-darkroom .nav, .shell-darkroom .side-rail {color: var(--ink)}
 }
 .threads .seat-no {display: none}
+
+/* X reference metrics (two-day-ui-reference.md) */
+.pill {min-height: 36px; border-radius: 999px}
+.pill.small {min-height: 32px}
+.pill.wide {border-radius: 999px}
+.post-head {padding: 12px var(--pad)}
+.post-head .person-avatar.small {width: 40px; height: 40px}
+.app-top {min-height: 53px}
+.bubble {border-radius: 18px}
+@media (min-width: 1100px) {.shell {grid-template-columns: 88px 600px 350px} .nav-label, .nav-post span, .nav-brand .wordmark i {display: none} .nav a, .nav-brand {justify-content: center; padding: 0} .nav-brand .wordmark {font-size: 0}}
+@media (min-width: 1280px) {.shell {grid-template-columns: 275px 600px 350px} .nav-label, .nav-post span {display: inline} .nav-brand .wordmark i {display: inline} .nav a {justify-content: flex-start; padding: 0 16px} .nav-brand {justify-content: flex-start; padding-left: 14px} .nav-brand .wordmark {font-size: 24px}}
