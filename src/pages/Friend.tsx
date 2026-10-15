@@ -29,18 +29,15 @@ export function FriendPage() {
       <Photo image={moments[0]?.image} alt=""/>
       <div className="cover-shade"/>
       <header className="friend-cover-nav"><BackButton/>{active && <button type="button" className="icon-button glass" aria-label="好友选项" onClick={() => setConfirm('leave')}><Icon name="more"/></button>}</header>
-      <div className="cover-title">
-        {active && <SeatNo slot={relation.slot}/>}
-        <h1>{person.name}</h1>
-        <p>{status} · {person.city}</p>
-      </div>
     </div>
 
     <div className="friend-detail">
-      <div className="friend-intro">
-        <PersonAvatar id={personId} size="normal"/>
-        <p className="friend-bio">{person.bio}</p>
+      <div className="friend-avatar-row"><PersonAvatar id={personId} size="large"/>{active && <SeatNo slot={relation.slot}/>}</div>
+      <div className="cover-title">
+        <h1>{person.name}</h1>
+        <p>{status} · {person.city}</p>
       </div>
+      <p className="friend-bio">{person.bio}</p>
       <div className="profile-interests">{[...person.interests, ...person.languages.map(l => `说${l}`)].map(t => <span key={t}>{t}</span>)}</div>
 
       {active ? <div className="friend-buttons">

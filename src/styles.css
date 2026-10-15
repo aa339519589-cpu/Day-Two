@@ -1,58 +1,56 @@
 /* ==========================================================================
-   Day Two — "回信" design system
-   Paper, ink and one ember. Serif for people and time, sans for actions.
+   Day Two — clean social UI: white canvas, system type, one blue accent.
    ========================================================================== */
 :root {
-  --bg: #f2eee5;
-  --surface: #faf8f3;
+  --bg: #ffffff;
+  --surface: #ffffff;
   --raise: #ffffff;
-  --sunk: #e7e1d4;
-  --ink: #1d1b17;
-  --ink-2: #5d574c;
-  --ink-3: #978f80;
-  --line: rgba(40, 33, 20, .1);
-  --line-2: rgba(40, 33, 20, .18);
-  --ember: #d9482b;
+  --sunk: #f2f3f5;
+  --ink: #0f1419;
+  --ink-2: #536471;
+  --ink-3: #8b98a5;
+  --line: #eff3f4;
+  --line-2: #dbe1e5;
+  --ember: #1d7cf2;
   --ember-ink: #fff;
-  --ember-soft: #f5ddd3;
-  --ember-text: #b93a20;
-  --moss: #4d6b55;
-  --bubble-me: #1d1b17;
-  --bubble-me-ink: #f4f0e7;
-  --bubble-them: #ffffff;
-  --shadow: 0 1px 1px rgba(40, 30, 15, .04), 0 10px 30px -12px rgba(40, 30, 15, .18);
-  --glass: rgba(250, 248, 243, .82);
-  --serif: "Songti SC", "STSong", "Noto Serif CJK SC", "Noto Serif SC", "Source Han Serif SC", "SimSun", ui-serif, Georgia, serif;
-  --num: "New York", "Iowan Old Style", "Charter", Georgia, "Times New Roman", serif;
-  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  --ember-soft: #e8f2fe;
+  --ember-text: #1668d0;
+  --moss: #00a35c;
+  --hot: #f4364c;
+  --bubble-me: #1d7cf2;
+  --bubble-me-ink: #fff;
+  --bubble-them: #f0f2f5;
+  --shadow: 0 0 0 1px var(--line);
+  --glass: rgba(255, 255, 255, .86);
+  --serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+  --num: var(--serif);
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);
-  --nav-h: 64px;
-  --pad: 22px;
-  --r-card: 26px;
+  --nav-h: 56px;
+  --pad: 16px;
+  --r-card: 14px;
   --ease: cubic-bezier(.2, .8, .2, 1);
   font-family: var(--sans);
   color-scheme: light;
 }
 :root[data-theme="dark"] {
-  --bg: #12110f; --surface: #1a1916; --raise: #23211d; --sunk: #0b0a09;
-  --ink: #efe9de; --ink-2: #b1a999; --ink-3: #7b7366;
-  --line: rgba(239, 233, 222, .09); --line-2: rgba(239, 233, 222, .17);
-  --ember: #ff6a47; --ember-ink: #1a0d08; --ember-soft: #3b1f17; --ember-text: #ff8a6c; --moss: #9cc3a6;
-  --bubble-me: #efe9de; --bubble-me-ink: #12110f; --bubble-them: #23211d;
-  --shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 14px 34px -14px rgba(0, 0, 0, .7);
-  --glass: rgba(26, 25, 22, .8);
+  --bg: #000000; --surface: #000000; --raise: #16181c; --sunk: #16181c;
+  --ink: #e7e9ea; --ink-2: #a0a8b0; --ink-3: #71767b;
+  --line: #2f3336; --line-2: #3e4144;
+  --ember: #1d9bf0; --ember-ink: #fff; --ember-soft: #0b2a40; --ember-text: #4cb3f6; --moss: #00ba7c;
+  --bubble-me: #1d9bf0; --bubble-me-ink: #fff; --bubble-them: #202327;
+  --glass: rgba(0, 0, 0, .78);
   color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #12110f; --surface: #1a1916; --raise: #23211d; --sunk: #0b0a09;
-    --ink: #efe9de; --ink-2: #b1a999; --ink-3: #7b7366;
-    --line: rgba(239, 233, 222, .09); --line-2: rgba(239, 233, 222, .17);
-    --ember: #ff6a47; --ember-ink: #1a0d08; --ember-soft: #3b1f17; --ember-text: #ff8a6c; --moss: #9cc3a6;
-    --bubble-me: #efe9de; --bubble-me-ink: #12110f; --bubble-them: #23211d;
-    --shadow: 0 1px 1px rgba(0, 0, 0, .3), 0 14px 34px -14px rgba(0, 0, 0, .7);
-    --glass: rgba(26, 25, 22, .8);
+    --bg: #000000; --surface: #000000; --raise: #16181c; --sunk: #16181c;
+    --ink: #e7e9ea; --ink-2: #a0a8b0; --ink-3: #71767b;
+    --line: #2f3336; --line-2: #3e4144;
+    --ember: #1d9bf0; --ember-ink: #fff; --ember-soft: #0b2a40; --ember-text: #4cb3f6; --moss: #00ba7c;
+    --bubble-me: #1d9bf0; --bubble-me-ink: #fff; --bubble-them: #202327;
+    --glass: rgba(0, 0, 0, .78);
     color-scheme: dark;
   }
 }
@@ -546,3 +544,245 @@ q {quotes: none}
 .seat-note {display: flex; align-items: center; gap: 16px; margin-top: 26px; padding: 18px; border: 1px dashed var(--line-2, var(--line)); border-radius: 20px; color: var(--ink-2); font-size: 14px; line-height: 1.6}
 .seat-note p {margin: 0}
 .seat-note .seat-meter {flex: none}
+
+/* ==========================================================================
+   Clean social layer (overrides the earlier editorial styles)
+   ========================================================================== */
+body {font-size: 15px; line-height: 1.45; letter-spacing: 0}
+h1, h2, h3, strong, b {font-weight: 700}
+.num {font-family: inherit; font-variant-numeric: tabular-nums; letter-spacing: 0}
+.screen {padding: calc(4px + var(--safe-t)) 0 24px; animation: fade .25s ease both}
+.device, .stack {width: 100%; max-width: none}
+
+/* primitives */
+.pill {min-height: 34px; padding: 0 16px; border-radius: 9px; font-size: 14px; font-weight: 600; letter-spacing: 0; gap: 6px}
+.pill.solid, .pill.ember {background: var(--ember); color: #fff}
+.pill.ghost, .pill:not(.solid):not(.ember):not(.ghost):not(.light) {background: var(--sunk); color: var(--ink); box-shadow: none}
+.pill.small {min-height: 30px; padding: 0 12px; font-size: 13px}
+.pill.wide {min-height: 44px; border-radius: 10px}
+.pill:active:not(:disabled) {transform: none; opacity: .75}
+.pill:disabled {opacity: .45}
+.text-button {color: var(--ember-text)}
+.chip {height: 24px; border-radius: 6px; font-weight: 600}
+.chip.live {background: var(--ember-soft); color: var(--ember-text)}
+.icon-button {width: 40px; height: 40px; flex-basis: 40px; position: relative}
+.icon-button:active {background: var(--sunk); transform: none}
+.eyebrow, .section-label {font-size: 13px; font-weight: 700; letter-spacing: 0; color: var(--ink-2)}
+.wordmark {font-family: var(--sans); font-size: 22px; font-weight: 800; letter-spacing: -.03em; gap: 8px}
+.wordmark i {font-style: normal; font-weight: 800; margin-left: 4px; color: var(--ink)}
+.seat-no {font-family: var(--sans); border-radius: 6px; height: 20px; min-width: 20px; font-size: 11px}
+.seat-meter i {width: 7px; height: 16px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px var(--line-2)}
+.seat-meter i.on {background: var(--ember)}
+.person-avatar {font-family: var(--sans); font-weight: 600; width: 44px; height: 44px; box-shadow: inset 0 0 0 .5px rgba(0, 0, 0, .08)}
+.person-avatar.small {width: 32px; height: 32px; font-size: 13px}
+.person-avatar.large {width: 88px; height: 88px}
+.person-avatar.ring {box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ember)}
+.dot-badge {position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--hot); color: #fff; font-style: normal; font-size: 10.5px; font-weight: 700; line-height: 17px; text-align: center; box-shadow: 0 0 0 2px var(--bg)}
+
+/* page heads */
+.app-top {position: sticky; top: 0; z-index: 20; min-height: 52px; margin: 0; padding: var(--safe-t) 8px 0 var(--pad); background: var(--glass); -webkit-backdrop-filter: blur(16px) saturate(1.8); backdrop-filter: blur(16px) saturate(1.8)}
+.top-actions {display: flex; gap: 2px}
+.page-hero {padding: 14px var(--pad) 12px; border-bottom: 1px solid var(--line)}
+.page-hero h1 {font-family: var(--sans); font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2}
+.page-hero .eyebrow {display: none}
+.lede {margin-top: 4px; font-size: 14px}
+.messages-screen .page-hero {padding-top: calc(14px + var(--safe-t))}
+
+/* bottom tab bar (mobile) */
+.nav {left: 0; right: 0; bottom: 0; transform: none; width: 100%; height: calc(var(--nav-h) + var(--safe-b)); padding: 0 0 var(--safe-b); border-radius: 0; background: var(--glass); box-shadow: 0 -1px 0 var(--line); justify-content: space-around}
+.nav a {height: var(--nav-h); border-radius: 0; gap: 2px; color: var(--ink-2)}
+.nav a.on {color: var(--ink)}
+.nav a.on .nav-icon, .nav a .nav-icon {transform: none}
+.nav a.on .nav-icon::after {display: none}
+.nav a.on .nav-label {opacity: 1}
+.nav-label {font-size: 10.5px; letter-spacing: 0; font-weight: 500}
+.nav a.on .nav-label {font-weight: 700}
+.nav-badge {background: var(--hot); color: #fff; box-shadow: 0 0 0 2px var(--bg)}
+.nav-post, .nav-brand {display: none}
+.stage {padding-bottom: calc(var(--nav-h) + var(--safe-b) + 8px)}
+.shell-darkroom .nav {background: rgba(0, 0, 0, .55); box-shadow: 0 -1px 0 rgba(255, 255, 255, .08)}
+.shell-darkroom .nav a.on {color: #fff}
+.side-rail {display: none}
+
+/* home: stories */
+.home-top .wordmark {font-size: 23px}
+.story-row {display: flex; align-items: flex-start; gap: 14px; padding: 8px var(--pad) 14px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line)}
+.story-row::-webkit-scrollbar {display: none}
+.story {display: grid; justify-items: center; gap: 6px; width: 68px; flex: none; color: var(--ink)}
+.story small {font-size: 12px; max-width: 68px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap}
+.story.empty small {color: var(--ink-3)}
+.story-ring {position: relative; display: grid; place-items: center; width: 66px; height: 66px; border-radius: 50%; padding: 3px; background: conic-gradient(from 210deg, #1d7cf2, #7b61ff, #f4364c, #ff9f1a, #1d7cf2)}
+.story-ring .person-avatar {width: 58px; height: 58px; box-shadow: 0 0 0 3px var(--bg)}
+.story-ring.seen, .story-ring.mine {background: var(--line-2)}
+.story-ring.mine {background: transparent}
+.story-ring.empty {background: transparent; box-shadow: inset 0 0 0 1.5px var(--line-2); color: var(--ink-3)}
+.story-plus {position: absolute; right: 1px; bottom: 1px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--ember); color: #fff; box-shadow: 0 0 0 2.5px var(--bg)}
+.story-meta {display: grid; justify-items: center; gap: 8px; margin-left: auto; padding-top: 18px; color: var(--ink-3); font-size: 11.5px; flex: none}
+
+/* home: posts */
+.friend-gallery {gap: 0}
+.friend-window.post {border-radius: 0; box-shadow: none; background: transparent; border-bottom: 1px solid var(--line); padding-bottom: 12px; animation: none; overflow: visible}
+.post-head {display: flex; align-items: center; justify-content: space-between; padding: 10px var(--pad)}
+.post-who {display: flex; align-items: center; gap: 10px; min-width: 0; text-align: left}
+.post-who-text {display: grid; min-width: 0}
+.post-who-text strong {font-size: 14px; line-height: 1.3}
+.post-who-text small {font-size: 12px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
+.post-new {font-size: 12px; font-weight: 700; color: var(--ember-text)}
+.post .seat-photo {aspect-ratio: 4 / 5; max-height: 72vh; border-radius: 0; background: var(--sunk)}
+.post .seat-photo.is-empty {display: grid; place-content: center; justify-items: center; gap: 8px; aspect-ratio: 16 / 9; color: var(--ink-3); font-size: 13px}
+.post .seat-photo:active img {transform: none}
+.post-bar {display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px var(--pad) 2px}
+.post-cta {display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 2px; font-size: 14px; font-weight: 700; color: var(--ink)}
+.post-cta.hot {color: var(--ember-text)}
+.post-status {display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-2); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
+.post-status i {width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); flex: none}
+.tone-waiting .post-status i, .tone-opener .post-status i {background: var(--ember)}
+.tone-waiting .post-status, .tone-opener .post-status {color: var(--ember-text); font-weight: 600}
+.tone-sent .post-status i {background: var(--moss)}
+.post-caption {padding: 2px var(--pad) 0; font-size: 14px; line-height: 1.45}
+.post-caption b {margin-right: 6px}
+
+/* home: requests */
+.requests {padding: 16px var(--pad) 8px}
+.requests .section-label {margin-bottom: 6px}
+.empty-seat.invitation {display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 0; padding: 10px 0; border: 0; border-radius: 0; background: none}
+.invitation.is-incoming {background: none}
+.invitation-person {gap: 12px; text-align: left; flex: 1}
+.invitation-person strong {font-family: var(--sans); font-size: 14px}
+.invitation-person small {-webkit-line-clamp: 1; font-size: 13px}
+.invitation-actions {flex: none; gap: 6px}
+.invitation-actions .pill {flex: none}
+.home-empty {padding: 24px var(--pad); color: var(--ink-2); font-size: 14px; text-align: center}
+.seat-quote, .stamp {font-family: var(--sans)}
+
+/* daily stream: keep immersive, tidy type */
+.shell-darkroom {background: #000}
+.photo-author strong, .photo-page-name {font-family: var(--sans); font-size: 15px}
+.photo-caption {font-family: var(--sans); font-size: 16px; line-height: 1.45; letter-spacing: 0}
+.photo-filters button, .photo-filters a {letter-spacing: 0}
+.photo-reply {border-radius: 22px}
+.photo-reply-go {background: var(--ember)}
+.photo-empty h2 {font-family: var(--sans); font-size: 18px}
+
+/* messages */
+.opener-copy strong, .thread-top strong {font-family: var(--sans); font-size: 15px}
+.thread-top time {font-family: var(--sans)}
+.threads {padding: 0}
+.thread {padding-inline: var(--pad)}
+.thread-flag {border-radius: 6px; background: var(--ember); color: #fff}
+
+/* chat */
+.chat-topbar {background: var(--glass); -webkit-backdrop-filter: blur(16px) saturate(1.8); backdrop-filter: blur(16px) saturate(1.8); border-bottom: 1px solid var(--line); box-shadow: none}
+.chat-topbar h1 {font-family: var(--sans); font-size: 16px}
+.day-rule {font-family: var(--sans); font-size: 12px; font-weight: 600}
+.day-rule::before, .day-rule::after {display: none}
+.when {font-family: var(--sans); font-size: 11px}
+.bubble {border-radius: 20px; box-shadow: none; font-size: 15px; line-height: 1.4}
+.bubble.them {background: var(--bubble-them); color: var(--ink); border: 0}
+.bubble.me {background: var(--bubble-me); color: var(--bubble-me-ink)}
+.quote-copy span, .chat-starter strong, .draft-copy p {font-family: var(--sans)}
+.chat-empty-title {font-family: var(--sans); font-size: 18px}
+.composer-field, .composer input {border-radius: 22px}
+
+/* friend: X-style banner + avatar */
+.friend-cover {height: calc(170px + var(--safe-t)); min-height: 0; aspect-ratio: auto}
+.friend-cover .cover-shade {background: linear-gradient(rgba(0, 0, 0, .35), transparent 50%)}
+.friend-detail {margin-top: 0; padding: 0 var(--pad); border-radius: 0}
+.friend-avatar-row {display: flex; align-items: flex-end; justify-content: space-between; margin-top: -44px; position: relative; z-index: 2}
+.friend-avatar-row .person-avatar {box-shadow: 0 0 0 4px var(--bg)}
+.friend-detail .cover-title {position: static; padding: 10px 0 0; color: var(--ink); text-shadow: none}
+.friend-detail .cover-title h1 {font-family: var(--sans); font-size: 22px; font-weight: 800; line-height: 1.25; color: var(--ink)}
+.friend-detail .cover-title p {font-size: 14px; color: var(--ink-2); margin-top: 2px}
+.friend-detail .friend-bio {font-family: var(--sans); font-size: 15px; line-height: 1.5; margin-top: 10px}
+.friend-detail .profile-interests {margin-top: 12px}
+.profile-interests span {border-radius: 6px; border: 0; background: var(--sunk); color: var(--ink-2)}
+.friend-buttons {margin-top: 16px; gap: 8px}
+.friend-buttons .pill {min-height: 38px}
+.daily-contract {border-radius: 14px; box-shadow: none; border: 1px solid var(--line); background: var(--surface)}
+.section-heading h2 {font-family: var(--sans); font-size: 16px}
+.contract-progress strong {font-family: var(--sans); font-weight: 800; color: var(--ink)}
+.contract-week i {border-radius: 50%}
+.seat-note {border-style: solid; border-color: var(--line); border-radius: 14px}
+
+/* profile */
+.profile-identity h2 {font-family: var(--sans); font-size: 22px; font-weight: 800}
+.profile-bio {font-family: var(--sans); font-size: 15px}
+.mini-grid {gap: 2px}
+.mini-grid > * {border-radius: 0}
+.settings-list, .seat-strip > * {border-radius: 14px; box-shadow: none}
+
+/* sheets, compose, landing */
+.sheet {border-radius: 16px 16px 0 0}
+.sheet-header h2, .upload-empty strong, .gate h1, .missing h1 {font-family: var(--sans)}
+.caption-field textarea {font-family: var(--sans); font-size: 16px}
+.caption-date, .caption-field small {font-family: var(--sans)}
+.gate h1 {font-weight: 800; letter-spacing: -.01em; font-size: 36px; line-height: 1.2}
+
+/* ---------- wide screens: X-style three columns ---------- */
+@media (min-width: 760px) {
+  body {background: var(--bg)}
+  .device, .stack, .gate {box-shadow: none}
+  .shell {display: grid; grid-template-columns: 88px minmax(0, 600px); justify-content: center; min-height: 100dvh}
+  .nav {position: sticky; top: 0; bottom: auto; left: auto; right: auto; height: 100dvh; width: auto; padding: 12px 12px; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 4px; background: var(--bg); box-shadow: none; border-right: 1px solid var(--line)}
+  .nav a {flex: none; height: 52px; flex-direction: row; justify-content: center; gap: 16px; border-radius: 26px; padding: 0 12px}
+  .nav a:hover {background: var(--sunk)}
+  .nav-label {display: none}
+  .nav-brand {display: flex; justify-content: center; height: 56px; align-items: center; margin-bottom: 8px}
+  .nav-brand .wordmark {font-size: 0; gap: 0}
+  .nav-brand .wordmark i {display: none}
+  .nav-post {display: flex; align-items: center; justify-content: center; gap: 8px; height: 52px; margin-top: 14px; border-radius: 26px; background: var(--ember); color: #fff; font-weight: 700; font-size: 15px}
+  .nav-post span {display: none}
+  .stage {padding-bottom: 0; border-right: 1px solid var(--line); min-width: 0}
+  .shell-darkroom {height: auto; overflow: visible}
+  .shell-darkroom .stage {height: 100dvh; position: sticky; top: 0}
+  .shell-darkroom .nav {background: var(--bg); box-shadow: none}
+  .shell-darkroom .nav a {color: var(--ink-2)}
+  .shell-darkroom .nav a.on {color: var(--ink)}
+  .shell-darkroom .nav-badge {box-shadow: 0 0 0 2px var(--bg)}
+  .immersive-reel .shell-darkroom .nav {opacity: 1; pointer-events: auto; transform: none}
+  .stack:not(.shell), .gate {max-width: 600px; margin-inline: auto; border-inline: 1px solid var(--line)}
+  .fit-viewport {width: min(100%, 600px); box-shadow: 0 0 0 1px var(--line)}
+  .screen {padding-top: 0}
+  .post .seat-photo {max-height: 640px; border-radius: 12px; margin-inline: var(--pad); width: calc(100% - var(--pad) * 2)}
+}
+@media (min-width: 1100px) {
+  .shell {grid-template-columns: 260px 600px 350px}
+  .nav {padding: 12px 16px; align-items: stretch}
+  .nav a {justify-content: flex-start; padding: 0 16px}
+  .nav-label {display: inline; font-size: 19px; font-weight: 500}
+  .nav a.on .nav-label {font-weight: 800}
+  .nav-brand {justify-content: flex-start; padding-left: 14px}
+  .nav-brand .wordmark {font-size: 24px; gap: 8px}
+  .nav-brand .wordmark i {display: inline}
+  .nav-post span {display: inline}
+  .side-rail {display: grid; align-content: start; gap: 16px; padding: 12px 0 24px 28px; position: sticky; top: 0; height: 100dvh; overflow: auto}
+  .rail-card {border-radius: 16px; background: var(--sunk); padding: 14px 0 6px}
+  .rail-card header {display: flex; align-items: center; justify-content: space-between; padding: 0 16px 8px}
+  .rail-card h2 {font-size: 19px; font-weight: 800}
+  .rail-row {display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 16px; text-align: left}
+  button.rail-row:hover {background: rgba(0, 0, 0, .04)}
+  .rail-row > span:last-child {display: grid; min-width: 0}
+  .rail-row strong {font-size: 15px}
+  .rail-row small {font-size: 13px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
+  .rail-row small.hot {color: var(--ember-text); font-weight: 600}
+  .rail-empty {width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--line-2); color: var(--ink-3); flex: none}
+  .rail-row.empty strong {color: var(--ink-2)}
+  .rail-foot {padding: 0 16px; font-size: 12.5px; color: var(--ink-3)}
+}
+
+/* round 2 fixes */
+.screen {padding-inline: var(--pad)}
+.home.screen {padding-inline: 0}
+.screen > .app-top {margin-inline: calc(var(--pad) * -1)}
+.home.screen > .app-top {margin-inline: 0}
+.page-hero {padding-inline: 0; border-bottom: 0}
+.day-rule {justify-content: center}
+.friend-avatar-row .seat-no {display: none}
+.profile-identity .person-avatar.large {box-shadow: none}
+.nav {transition: none}
+@media (min-width: 760px) {
+  .shell.shell-darkroom {background: var(--bg); color: var(--ink)}
+  .shell-darkroom .stage {background: #000; color: #fff}
+  .shell-darkroom .nav, .shell-darkroom .side-rail {color: var(--ink)}
+}
+.threads .seat-no {display: none}
