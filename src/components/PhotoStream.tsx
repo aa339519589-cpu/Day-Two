@@ -106,7 +106,14 @@ export function PhotoStream({ personId, inShell = false }: { personId?: string; 
       }
       if (e.key === 'Escape') setClean(false)
     }
-    const observer = new ResizeObserver(() => {node.scrollTop = position.current * node.clientHeight})
+    // Re-pin only when the rail's height really changes (rotation, iOS toolbar). The observer's
+    // initial callback would otherwise cancel a scroll that is already in progress.
+    let height = node.clientHeight
+    const observer = new ResizeObserver(() => {
+      if (node.clientHeight === height) return
+      height = node.clientHeight
+      node.scrollTop = position.current * height
+    })
     observer.observe(node)
     node.addEventListener('scroll', sync, {passive:true})
     node.addEventListener('wheel', onWheel, {passive:false})
