@@ -1,0 +1,148 @@
+/* ==========================================================================
+   Day Two — motion layer
+   Short, quiet, purposeful. Every interaction gets an immediate physical
+   response (press), a clear state change (select / send / appear), and
+   nothing loops or decorates. Only transform + opacity are animated.
+   Timing follows X: 150ms standard, 200ms for panels, 80ms for press-in.
+   Loaded after styles.css; prefers-reduced-motion is honored at the end.
+   ========================================================================== */
+:root {
+  --dur-press: 80ms;
+  --dur-fast: 150ms;
+  --dur-panel: 200ms;
+  --dur-enter: 260ms;
+  --ease-std: cubic-bezier(.4, 0, .2, 1);
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-in: cubic-bezier(.4, 0, 1, 1);
+  --ease-pop: cubic-bezier(.3, 1.45, .55, 1);
+}
+
+@keyframes m-screen-in {from {opacity: 0; transform: translateY(6px)} to {opacity: 1; transform: none}}
+@keyframes m-rise {from {opacity: 0; transform: translateY(10px)} to {opacity: 1; transform: none}}
+@keyframes m-fade {from {opacity: 0} to {opacity: 1}}
+@keyframes m-pop {0% {transform: scale(.9)} 60% {transform: scale(1.06)} 100% {transform: scale(1)}}
+@keyframes m-tab {0% {transform: scale(1)} 35% {transform: scale(.86)} 75% {transform: scale(1.08)} 100% {transform: scale(1)}}
+@keyframes m-badge {0% {transform: scale(0)} 70% {transform: scale(1.18)} 100% {transform: scale(1)}}
+@keyframes m-bubble-me {from {opacity: 0; transform: translate(6px, 10px) scale(.92)} to {opacity: 1; transform: none}}
+@keyframes m-bubble-them {from {opacity: 0; transform: translate(-6px, 10px) scale(.92)} to {opacity: 1; transform: none}}
+@keyframes m-sheet {from {transform: translateY(24px); opacity: 0} to {transform: none; opacity: 1}}
+@keyframes m-toast {0% {opacity: 0; transform: translate(-50%, -14px) scale(.96)} 100% {opacity: 1; transform: translate(-50%, 0) scale(1)}}
+@keyframes m-shimmer {from {transform: translateX(-100%)} to {transform: translateX(100%)}}
+
+/* ---------- page enter: a short lift instead of a blank fade ---------- */
+.screen {animation: m-screen-in var(--dur-enter) var(--ease-out) both}
+
+/* ---------- press feedback: everything tappable answers within one frame ---------- */
+.pill, .icon-button, .post-cta, .story, .rail-row, .thread, .opener, .send, .photo-reply,
+.post-who, .invitation-person, .nav-post, .settings-row, .seat-strip button, .mini-grid button,
+.theme-picker button, .chat-starter, .contract-invite, .text-button, .photo-filters button {
+  transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-std),
+              color var(--dur-fast) var(--ease-std), opacity var(--dur-fast) var(--ease-std), box-shadow var(--dur-fast) var(--ease-std);
+}
+.pill:active:not(:disabled), .nav-post:active, .opener:active, .chat-starter:active,
+.contract-invite:active, .seat-strip button:active, .photo-reply:active {
+  transform: scale(.97); opacity: 1; transition-duration: var(--dur-press)
+}
+.icon-button:active, .send:active:not(:disabled), .story:active {transform: scale(.9); transition-duration: var(--dur-press)}
+.post-cta:active, .text-button:active, .post-who:active, .invitation-person:active {opacity: .6; transition-duration: var(--dur-press)}
+.thread:active, .rail-row:active, .settings-row:active {background-color: var(--sunk); opacity: 1; transition-duration: var(--dur-press)}
+.post-cta svg {transition: transform var(--dur-panel) var(--ease-pop)}
+.post-cta:active svg {transform: scale(.82)}
+
+/* ---------- hover (pointer devices only) ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .icon-button:hover {background-color: var(--sunk)}
+  .pill.solid:hover:not(:disabled), .pill.ember:hover:not(:disabled), .nav-post:hover {background-color: var(--ember-text)}
+  .pill.ghost:hover:not(:disabled), .pill:not(.solid):not(.ember):not(.light):hover:not(:disabled) {background-color: var(--line-2)}
+  .thread:hover {background-color: var(--sunk)}
+  .post-cta:hover {color: var(--ember-text)}
+  .post-cta:hover svg {transform: scale(1.08)}
+  .post-who:hover strong {text-decoration: underline; text-underline-offset: 2px}
+  .story:hover .story-ring {transform: scale(1.04)}
+  .story-ring {transition: transform var(--dur-panel) var(--ease-out)}
+  .opener:hover img, .mini-grid button:hover img {transform: scale(1.03)}
+  .opener img {transition: transform .45s var(--ease-out)}
+  .nav a {transition: background-color var(--dur-fast) var(--ease-std), color var(--dur-fast) var(--ease-std)}
+  .seat-photo:hover img {transform: scale(1.015)}
+}
+
+/* ---------- tab bar: the selected icon gives a small bounce, badges pop in ---------- */
+.nav a .nav-icon {transition: transform var(--dur-fast) var(--ease-out)}
+.nav a:active .nav-icon {transform: scale(.86)}
+.nav a.on .nav-icon {animation: m-tab var(--dur-enter) var(--ease-out)}
+.nav a .nav-label {transition: color var(--dur-fast) var(--ease-std)}
+.nav-badge, .dot-badge {animation: m-badge .32s var(--ease-pop) both}
+
+/* ---------- home: stories ring and the feed arriving in order ---------- */
+.story-row .story {animation: m-rise var(--dur-enter) var(--ease-out) both}
+.story-row .story:nth-child(2) {animation-delay: 30ms}
+.story-row .story:nth-child(3) {animation-delay: 60ms}
+.story-row .story:nth-child(4) {animation-delay: 90ms}
+.story-row .story:nth-child(5) {animation-delay: 120ms}
+.friend-window.post {animation: m-rise var(--dur-enter) var(--ease-out) both}
+.friend-window.post:nth-child(2) {animation-delay: 50ms}
+.friend-window.post:nth-child(3) {animation-delay: 100ms}
+.empty-seat.invitation {animation: m-rise var(--dur-enter) var(--ease-out) both}
+.rail-card {animation: m-fade var(--dur-enter) var(--ease-std) both}
+
+/* ---------- photos: placeholder sheen while loading, soft fade when ready ---------- */
+.seat-photo, .opener, .mini-grid button, .thread-thumb {isolation: isolate}
+.seat-photo::before, .mini-grid button::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .35) 50%, transparent 70%);
+  animation: m-shimmer 1.3s var(--ease-std) 5
+}
+:root[data-theme="dark"] .seat-photo::before, :root[data-theme="dark"] .mini-grid button::before {background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .06) 50%, transparent 70%)}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .seat-photo::before, :root:not([data-theme="light"]) .mini-grid button::before {background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .06) 50%, transparent 70%)}
+}
+.mini-grid button {position: relative}
+.seat-photo.is-empty::before {display: none}
+img[data-loaded] {animation: m-fade .32s var(--ease-std) both}
+.photo-slide > img[data-loaded] {animation: fade .4s ease both}
+.seat-photo img {transition: transform .5s var(--ease-out)}
+
+/* ---------- chat: only the newest bubble animates, from its own side ---------- */
+.bubble {animation: none}
+.msg-row:last-child .bubble.me {transform-origin: 100% 100%; animation: m-bubble-me var(--dur-panel) var(--ease-out) both}
+.msg-row:last-child .bubble.them {transform-origin: 0 100%; animation: m-bubble-them var(--dur-panel) var(--ease-out) both}
+.send:not(:disabled) {animation: m-pop var(--dur-panel) var(--ease-out)}
+.send svg {transition: transform var(--dur-fast) var(--ease-out)}
+.send:not(:disabled):hover svg {transform: translateX(1px) rotate(-8deg)}
+.composer-field {transition: box-shadow var(--dur-fast) var(--ease-std), background-color var(--dur-fast) var(--ease-std)}
+.draft {animation: m-rise var(--dur-panel) var(--ease-out) both}
+
+/* ---------- photo viewer chrome ---------- */
+.photo-chrome {transition: opacity var(--dur-panel) var(--ease-std), transform var(--dur-enter) var(--ease-out), visibility var(--dur-panel)}
+.photo-scrim {transition: opacity var(--dur-panel) var(--ease-std)}
+.photo-filters button {transition: background-color var(--dur-fast) var(--ease-std), color var(--dur-fast) var(--ease-std), transform var(--dur-fast) var(--ease-out)}
+.photo-filters button:active {transform: scale(.94)}
+.photo-progress i {transition: height var(--dur-enter) var(--ease-out), background-color var(--dur-enter) var(--ease-std)}
+
+/* ---------- sheets, toasts, segmented controls ---------- */
+.sheet[open] {animation: m-sheet var(--dur-enter) var(--ease-out) both}
+.sheet[open]::backdrop {animation: m-fade var(--dur-panel) var(--ease-std) both}
+.toast {animation: m-toast var(--dur-enter) var(--ease-pop) both}
+.theme-picker button.selected {animation: m-pop var(--dur-panel) var(--ease-out)}
+.lightbox {animation: m-fade var(--dur-panel) var(--ease-std)}
+.lightbox img {animation: m-pop var(--dur-enter) var(--ease-out)}
+.profile-stats strong, .contract-progress strong {transition: color var(--dur-fast) var(--ease-std)}
+.contract-week i {transition: background-color var(--dur-panel) var(--ease-std), box-shadow var(--dur-panel) var(--ease-std)}
+
+/* ---------- reduced motion: keep state changes, drop movement ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important}
+  .seat-photo::before, .mini-grid button::before {display: none}
+}
+
+/* ---------- the two core lines: seats and photos get the most weight ---------- */
+@keyframes m-seat-fill {0% {transform: scaleY(.3); opacity: .3} 60% {transform: scaleY(1.15)} 100% {transform: none; opacity: 1}}
+@keyframes m-waiting {0%, 100% {box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ember)} 50% {box-shadow: 0 0 0 2px var(--bg), 0 0 0 6px var(--ember-soft), 0 0 0 4px var(--ember)}}
+/* a filled seat snaps into the meter, one after another */
+.seat-meter i.on {transform-origin: 50% 100%; animation: m-seat-fill .36s var(--ease-pop) both}
+.seat-meter i.on:nth-child(2) {animation-delay: 60ms}
+.seat-meter i.on:nth-child(3) {animation-delay: 120ms}
+/* someone in a seat is waiting for you: the ring breathes three times, then rests */
+.person-avatar.ring {animation: m-waiting 1.6s var(--ease-std) 3}
+/* opening someone's day from the home feed: the photo leans in slightly before the viewer takes over */
+.post .seat-photo:active img {transform: scale(.985); transition-duration: var(--dur-press)}

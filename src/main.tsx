@@ -5,6 +5,7 @@ import { App } from './App'
 import { StoreProvider } from './store'
 import { Toaster } from './ui'
 import './styles.css'
+import './motion.css'
 
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
 

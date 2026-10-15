@@ -167,11 +167,19 @@ export function Photo({
   if (onClick) {
     return (
       <button type="button" className={className} onClick={onClick}>
-        <img src={src} alt={alt} draggable={false} onError={handleError} />
+        <img src={src} alt={alt} draggable={false} onError={handleError} onLoad={markLoaded} ref={markIfComplete} />
       </button>
     )
   }
-  return <img src={src} alt={alt} className={className} draggable={false} onError={handleError} />
+  return <img src={src} alt={alt} className={className} draggable={false} onError={handleError} onLoad={markLoaded} ref={markIfComplete} />
+}
+
+/** Flags a photo once its pixels are ready so motion.css can fade it in. */
+function markLoaded(event: React.SyntheticEvent<HTMLImageElement>) {
+  event.currentTarget.dataset.loaded = ''
+}
+function markIfComplete(el: HTMLImageElement | null) {
+  if (el && el.complete && el.naturalWidth > 0) el.dataset.loaded = ''
 }
 
 export function Back({ fallback = '/home', light = false }: { fallback?: string; light?: boolean }) {
