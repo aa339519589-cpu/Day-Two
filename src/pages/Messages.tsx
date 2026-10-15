@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BRAND } from '../brand'
 import { dayCount } from '../logic'
@@ -21,15 +22,17 @@ export function MessagesPage() {
       return (b.last?.createdAt || b.relation?.since || '').localeCompare(a.last?.createdAt || a.relation?.since || '')
     })
   const waiting = pulses.filter(p => p.waiting).length
+  const [query, setQuery] = useState('')
+  const q = query.trim().toLowerCase()
+  const shown = q ? rows.filter(r => r.person!.name.toLowerCase().includes(q)) : rows
 
   return <section className="screen messages-screen">
-    <div className="page-hero">
-      <p className="eyebrow">只和三个人</p>
-      <div className="hero-row"><h1>消息</h1></div>
-      <p className="lede">{waiting ? <><b>{waiting}</b> 个对话在等你回</> : rows.length ? '没有在等你的对话' : '还没有对话'}</p>
-    </div>
+    <header className="dm-head">
+      <div className="dm-title"><h1>消息</h1>{waiting > 0 && <span className="dm-count" aria-label={`${waiting} 个对话在等你回`}>{waiting}</span>}</div>
+      {rows.length > 0 && <label className="dm-search"><Icon name="search" size={17}/><input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="搜索对话" aria-label="搜索对话"/></label>}
+    </header>
 
-    {openers.length > 0 && <section className="openers" aria-label="从照片开始">
+    {openers.length > 0 && !q && <section className="openers" aria-label="从照片开始">
       <h2 className="section-label">从照片开始</h2>
       <div className="opener-row">{openers.map(p => <button type="button" className="opener" key={p.person.id} onClick={() => navigate(`/chat/${p.person.id}?moment=${encodeURIComponent(p.opener!.id)}`)}>
         <Photo image={p.opener!.image} alt=""/>
@@ -38,8 +41,8 @@ export function MessagesPage() {
       </button>)}</div>
     </section>}
 
-    {rows.length > 0 && <h2 className="section-label">对话</h2>}
-    <div className="threads">{rows.map(({ id, person, last, relation, pulse }) => {
+    {rows.length > 0 && <h2 className="section-label dm-label">对话</h2>}
+    <div className="threads">{shown.map(({ id, person, last, relation, pulse }) => {
       const ended = relation?.status === 'ended'
       const meta = ended ? '已结束' : relation?.status === 'active' ? `第 ${dayCount(relation.since)} 天` : ''
       return <button type="button" className={`thread${ended ? ' is-ended' : ''}${pulse?.waiting ? ' is-waiting' : ''}`} key={id} onClick={() => navigate(`/chat/${id}`)}>
@@ -48,9 +51,10 @@ export function MessagesPage() {
           <span className="thread-top"><strong>{person!.name}</strong>{relation?.status === 'active' && <SeatNo slot={relation.slot}/>}<em>{meta}</em>{last && <time>{whenShort(last.createdAt, today)}</time>}</span>
           <span className="thread-excerpt">{last ? <>{last.from === 'me' && <span className="you">你：</span>}{last.momentId && <span className="quote-tag">回应照片</span>}{last.text || '[照片]'}</> : '还没有消息'}</span>
         </span>
-        {pulse?.waiting ? <span className="thread-flag" aria-label="等你回复">等你回</span> : pulse?.opener ? <span className="thread-thumb"><Photo image={pulse.opener.image} alt=""/></span> : null}
+        {pulse?.waiting ? <span className="thread-dot" aria-label="等你回复"/> : pulse?.opener ? <span className="thread-thumb"><Photo image={pulse.opener.image} alt=""/></span> : null}
       </button>
     })}</div>
+    {q && !shown.length && <p className="dm-none">没有找到“{query.trim()}”</p>}
     {!rows.length && <div className="empty-state"><p>还没有消息</p><button type="button" className="pill solid" onClick={() => navigate('/home')}>去认识朋友</button></div>}
   </section>
 }

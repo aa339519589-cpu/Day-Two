@@ -71,8 +71,10 @@ export function ChatPage() {
           {messages.length === 0 ? (
             <div className="chat-empty-note">
               <PersonAvatar id={person.id} size="large" />
-              <p className="chat-empty-title">和 {person.name} 的第一句</p>
-              <p className="chat-empty-sub">{person.bio}</p>
+              <p className="chat-empty-title">{person.name}</p>
+              <p className="chat-empty-meta">{[person.city, subtitle !== person.city ? subtitle : ''].filter(Boolean).join(' · ')}</p>
+              {person.bio && <p className="chat-empty-sub">{person.bio}</p>}
+              <button type="button" className="pill ghost chat-empty-profile" onClick={() => navigate(`/friend/${person.id}`)}>查看资料</button>
               {latest && canSend && !moment && <button type="button" className="chat-starter" onClick={() => setParams({ moment: latest.id }, { replace: true })}>
                 <Photo image={latest.image} alt="" />
                 <span><small>从{person.pronoun}{partOfDay(latest.createdAt)}的照片开始</small><strong>{latest.caption || '一张日常'}</strong></span>
@@ -95,6 +97,8 @@ export function ChatPage() {
                 <div key={message.id} className={`msg-row ${message.from === 'me' ? 'me' : 'them'}${sameAsPrev ? ' tight' : ''}`}>
                   {newDay && <div className="day-rule"><span>{dayLabel(day, today)}</span></div>}
                   {(gap || newDay) && <div className="when"><span>{hm(message.createdAt)}</span></div>}
+                  <div className="msg-line">
+                  {message.from !== 'me' && <span className="msg-avatar">{!sameAsNext && <PersonAvatar id={person.id} size="tiny" />}</span>}
                   <article className={`bubble ${message.from === 'me' ? 'me' : 'them'}${sameAsNext ? ' has-next' : ''}${quoted ? ' has-quote' : ''}${message.image && !message.text ? ' only-image' : ''}`}>
                     {quoted && (
                       <button type="button" className="quote" onClick={() => active ? navigate(`/feed/${quoted.authorId === 'me' ? 'me' : personId}?m=${quoted.id}`) : setLightbox(quoted.image)}>
@@ -105,6 +109,7 @@ export function ChatPage() {
                     {message.image && <Photo className="shot" image={message.image} alt="聊天照片" onClick={() => setLightbox(message.image!)} />}
                     {message.text && <p>{message.text}</p>}
                   </article>
+                  </div>
                 </div>
               )
             })

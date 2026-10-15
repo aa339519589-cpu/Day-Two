@@ -5,7 +5,7 @@ import { useStore } from '../store'
 import { initialOf } from '../logic'
 import { Photo } from '../ui'
 
-export type IconName = 'friends' | 'photo' | 'chat' | 'me' | 'plus' | 'back' | 'close' | 'arrow' | 'more' | 'expand' | 'contract' | 'check' | 'sun' | 'moon' | 'system' | 'edit' | 'camera' | 'chevron' | 'send' | 'image' | 'reply' | 'seat' | 'pause' | 'play'
+export type IconName = 'friends' | 'photo' | 'chat' | 'me' | 'plus' | 'back' | 'close' | 'arrow' | 'more' | 'expand' | 'contract' | 'check' | 'sun' | 'moon' | 'system' | 'edit' | 'camera' | 'chevron' | 'send' | 'image' | 'reply' | 'seat' | 'pause' | 'play' | 'search'
 const paths: Record<IconName, ReactNode> = {
   friends: <><rect x="3.5" y="5" width="5" height="14" rx="2.5"/><rect x="9.5" y="5" width="5" height="14" rx="2.5"/><rect x="15.5" y="5" width="5" height="14" rx="2.5" strokeDasharray="2.2 2.4"/></>,
   photo: <><rect x="6" y="2.75" width="12" height="18.5" rx="3"/><path d="M9.5 17.25h5"/></>,
@@ -29,6 +29,7 @@ const paths: Record<IconName, ReactNode> = {
   seat: <rect x="7" y="4" width="10" height="16" rx="5"/>,
   pause: <path d="M9 6v12M15 6v12"/>,
   play: <path d="M8 5.5v13l10-6.5-10-6.5Z"/>,
+  search: <><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></>,
 }
 export function Icon({ name, size = 22, stroke = 1.7 }: { name: IconName; size?: number; stroke?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>

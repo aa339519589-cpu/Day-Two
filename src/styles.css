@@ -797,3 +797,98 @@ h1, h2, h3, strong, b {font-weight: 700}
 .bubble {border-radius: 18px}
 @media (min-width: 1100px) {.shell {grid-template-columns: 88px 600px 350px} .nav-label, .nav-post span, .nav-brand .wordmark i {display: none} .nav a, .nav-brand {justify-content: center; padding: 0} .nav-brand .wordmark {font-size: 0}}
 @media (min-width: 1280px) {.shell {grid-template-columns: 275px 600px 350px} .nav-label, .nav-post span {display: inline} .nav-brand .wordmark i {display: inline} .nav a {justify-content: flex-start; padding: 0 16px} .nav-brand {justify-content: flex-start; padding-left: 14px} .nav-brand .wordmark {font-size: 24px}}
+
+/* ---------- messages & chat (X / Instagram DM style) ---------- */
+.messages-screen {padding-inline: 0}
+.dm-head {position: sticky; top: 0; z-index: 4; padding: calc(10px + var(--safe-t)) var(--pad) 10px; background: var(--glass); -webkit-backdrop-filter: blur(16px) saturate(1.8); backdrop-filter: blur(16px) saturate(1.8)}
+.dm-title {display: flex; align-items: center; gap: 8px; height: 36px}
+.dm-title h1 {font-family: var(--sans); font-size: 20px; font-weight: 800; letter-spacing: -.01em}
+.dm-count {min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ember); color: #fff; font-size: 12px; font-weight: 700; line-height: 20px; text-align: center}
+.dm-search {display: flex; align-items: center; gap: 8px; height: 38px; margin-top: 8px; padding: 0 14px; border-radius: 19px; background: var(--sunk); color: var(--ink-3); box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .15s, background .15s}
+.dm-search:focus-within {background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--ember); color: var(--ember)}
+.dm-search input {flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; outline: none; font-size: 15px; color: var(--ink)}
+.dm-search input::placeholder {color: var(--ink-3)}
+.dm-search input::-webkit-search-cancel-button {display: none}
+.messages-screen .openers {margin: 4px 0 8px}
+.messages-screen .openers .section-label, .dm-label {padding: 0 var(--pad); margin: 0 0 10px; font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: 0}
+.dm-label {margin: 6px 0 2px}
+.messages-screen .opener {width: 112px; border-radius: 14px; box-shadow: none}
+.messages-screen .opener-copy {left: 9px; right: 9px; bottom: 8px}
+.messages-screen .opener-copy strong {font-size: 13.5px}
+.messages-screen .opener-copy small {font-size: 11px}
+.messages-screen .opener-go {width: 26px; height: 26px; top: 7px; right: 7px}
+.messages-screen .thread {gap: 12px; padding: 10px var(--pad); border-bottom: 0; transition: background .15s}
+.messages-screen .thread:hover {background: var(--sunk)}
+.messages-screen .thread:active {opacity: 1; background: var(--sunk)}
+.messages-screen .thread .person-avatar {width: 52px; height: 52px}
+.messages-screen .thread-body {gap: 2px}
+.messages-screen .thread-top strong {font-size: 15px; font-weight: 700}
+.messages-screen .thread-top em {font-size: 13px; color: var(--ink-3)}
+.messages-screen .thread-top time {font-size: 13px; color: var(--ink-3)}
+.messages-screen .thread-top time::before {content: "·"; margin-right: 6px}
+.messages-screen .thread-top time {margin-left: 0}
+.messages-screen .thread-excerpt {font-size: 14px; color: var(--ink-2)}
+.messages-screen .thread-excerpt .quote-tag {margin-right: 4px; color: var(--ember-text)}
+.messages-screen .is-waiting .thread-top strong, .messages-screen .is-waiting .thread-excerpt {color: var(--ink); font-weight: 700}
+.thread-dot {width: 10px; height: 10px; flex: none; border-radius: 50%; background: var(--ember)}
+.messages-screen .thread-thumb {width: 40px; height: 40px; border-radius: 8px; box-shadow: none}
+.messages-screen .thread.is-ended {opacity: 1}
+.messages-screen .thread.is-ended .person-avatar {filter: grayscale(1); opacity: .6}
+.messages-screen .thread.is-ended .thread-excerpt {color: var(--ink-3)}
+.dm-none {padding: 28px var(--pad); text-align: center; color: var(--ink-2); font-size: 14px}
+.messages-screen .empty-state {padding: 48px var(--pad)}
+
+/* chat */
+.chat-topbar {min-height: calc(53px + var(--safe-t))}
+.chat-peer-head {gap: 10px; border-radius: 10px}
+.chat-peer-head .person-avatar {width: 32px; height: 32px}
+.chat-peer-meta h1 {font-size: 16px; font-weight: 700; line-height: 1.2}
+.chat-peer-meta p {font-size: 12px; color: var(--ink-2)}
+.chat-log-inner {padding: 12px 12px 14px}
+.day-rule {margin: 18px 0 4px; color: var(--ink-3); font-size: 12px; font-weight: 600}
+.when {margin: 10px 0 4px; font-size: 11.5px; color: var(--ink-3); letter-spacing: 0}
+.msg-row {margin-top: 8px}
+.msg-row.tight {margin-top: 2px}
+.msg-line {display: flex; align-items: flex-end; gap: 8px; max-width: 100%}
+.msg-row.me .msg-line {justify-content: flex-end}
+.msg-avatar {width: 28px; flex: none; display: flex}
+.msg-avatar .person-avatar {width: 28px; height: 28px; font-size: 12px}
+.bubble {max-width: min(72vw, 420px); padding: 8px 14px; border-radius: 18px; font-size: 15px; line-height: 1.38}
+.bubble.them {border-bottom-left-radius: 18px}
+.bubble.me {border-bottom-right-radius: 18px}
+.bubble.them.has-next {border-bottom-left-radius: 6px}
+.bubble.me.has-next {border-bottom-right-radius: 6px}
+.msg-row.them.tight .bubble {border-top-left-radius: 6px}
+.msg-row.me.tight .bubble {border-top-right-radius: 6px}
+.bubble.has-quote {padding: 4px 4px 9px; width: min(70vw, 280px)}
+.bubble.has-quote p {padding: 0 10px}
+.bubble .quote {border-radius: 14px}
+.bubble .shot {border-radius: 14px}
+.bubble.only-image {padding: 0}
+.bubble a {color: inherit; text-decoration: underline}
+.chat-empty-note {gap: 4px; padding: 36px 16px 24px}
+.chat-empty-note .person-avatar.large {width: 88px; height: 88px; margin-bottom: 8px}
+.chat-empty-title {margin-top: 0; font-size: 20px; font-weight: 800}
+.chat-empty-meta {font-size: 14px; color: var(--ink-2)}
+.chat-empty-sub {margin-top: 6px; font-size: 14px; line-height: 1.45; color: var(--ink); max-width: 300px}
+.chat-empty-profile {margin-top: 12px; min-height: 34px; padding: 0 16px; font-size: 14px; font-weight: 700}
+.chat-starter {margin-top: 22px; border-radius: 16px; box-shadow: inset 0 0 0 1px var(--line-2); background: var(--bg)}
+.chat-starter img {width: 46px; height: 58px; border-radius: 10px}
+.draft {margin: 0 12px 6px; border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line-2); background: var(--bg)}
+.draft::before {content: ""; width: 3px; align-self: stretch; border-radius: 2px; background: var(--ember); margin-right: -4px}
+.composer {gap: 4px; padding: 8px 12px calc(8px + var(--safe-b)) 8px; border-top: 1px solid var(--line)}
+.composer-media {color: var(--ember)}
+.composer-field {min-height: 42px; padding: 3px 3px 3px 16px; border-radius: 21px; background: var(--sunk); box-shadow: none}
+.composer-field:focus-within {background: var(--bg); box-shadow: inset 0 0 0 1.5px var(--ember)}
+.composer-field input {height: 36px; font-size: 15px}
+.send {width: 36px; height: 36px}
+.send:disabled {background: transparent; color: var(--ink-3)}
+.ended-bar {border-top: 1px solid var(--line)}
+@media (hover: hover) {
+  .chat-peer-head:hover {background: var(--sunk)}
+}
+@media (min-width: 760px) {
+  .dm-head {padding-top: 12px}
+  .bubble {max-width: 420px}
+  .bubble.has-quote {width: 300px}
+}
